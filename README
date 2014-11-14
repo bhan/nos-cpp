@@ -1,1 +1,8 @@
 Bo Han, Benson Ma, Kenny Root
+
+Server --> Agent
+  Server process exports Network Object with name
+Client --> Agent
+  Client retrieves Network Object by name
+Client --> Server
+  Client makes function calls to Server
