@@ -1,6 +1,8 @@
 CPP=clang++
 ARGS=-std=c++11
 
+agent:
+	$(CPP) $(ARGS) Agent.hpp
 test: classes utils
 	$(CPP) $(ARGS) -o test test.cpp
 
