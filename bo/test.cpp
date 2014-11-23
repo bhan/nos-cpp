@@ -1,12 +1,15 @@
 #include <iostream>
 #include <typeinfo>
 
+#include "Agent.hpp"
 #include "BaseA.hpp"
 #include "BaseAGenerated.hpp"
 #include "BaseB.hpp"
 #include "BaseBGenerated.hpp"
 #include "NetObj.hpp"
 #include "TypeUtil.hpp"
+
+Agent* Agent::_instance = NULL;
 
 int main() {
   NetObj* netObj = new BaseAClient();
@@ -28,7 +31,15 @@ int main() {
   if (typeUtilA == NULL) {
     std::cout << "typeUtilA is NULL" << std::endl;
   } else {
-  std::cout << typeid(*typeUtilA).name() << " " << typeid(*typeUtilA).hash_code() << std::endl;
+    std::cout << typeid(*typeUtilA).name() << " " << typeid(*typeUtilA).hash_code() << std::endl;
+    NetObj& typeUtilARef = *typeUtilA;
+      std::cout << typeid(typeUtilARef).name() << " " << typeid(typeUtilARef).hash_code() << std::endl;
   }
 //  std::cout << typeid(*typeUtilA).name() << " " << typeid(*typeUtilA).hash_code() << std::endl;
+  Agent::Instance()->Initialize();
+  BaseA* helloObj = new BaseA();
+  Agent::Instance()->Export("hello", helloObj);
+  Agent::Instance()->Export("goodbye", helloObj);
+  Agent::Instance()->PrintExported();
+  Agent::Instance()->Exit();
 }
