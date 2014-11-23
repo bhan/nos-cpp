@@ -1,7 +1,14 @@
 CPP=clang++
 ARGS=-std=c++11
 
-test:
-	$(CPP) $(ARGS) test.cpp -o test
+test: classes utils
+	$(CPP) $(ARGS) -o test test.cpp
+
+classes:
+	$(CPP) $(ARGS) BaseA.hpp BaseAGenerated.hpp BaseB.hpp BaseBGenerated.hpp
+
+utils:
+	$(CPP) $(ARGS) TypeUtil.hpp
+
 clean:
-	rm test
+	rm test *.gch

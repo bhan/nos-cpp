@@ -6,6 +6,7 @@
 #include "BaseB.hpp"
 #include "BaseBGenerated.hpp"
 #include "NetObj.hpp"
+#include "TypeUtil.hpp"
 
 int main() {
   NetObj* netObj = new BaseAClient();
@@ -21,4 +22,13 @@ int main() {
 
   NetObj* netObjB = new BaseBClient();
   std::cout << typeid(*netObjB).name() << " " << typeid(*netObjB).hash_code() << std::endl;
+
+  TypeUtil typeUtil;
+  NetObj* typeUtilA = typeUtil.getClientObjFromName(typeid(BaseA).name());
+  if (typeUtilA == NULL) {
+    std::cout << "typeUtilA is NULL" << std::endl;
+  } else {
+  std::cout << typeid(*typeUtilA).name() << " " << typeid(*typeUtilA).hash_code() << std::endl;
+  }
+//  std::cout << typeid(*typeUtilA).name() << " " << typeid(*typeUtilA).hash_code() << std::endl;
 }

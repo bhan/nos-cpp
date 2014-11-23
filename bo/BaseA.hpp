@@ -3,6 +3,7 @@
 #define _BASE_A_H
 
 #include <cstdint>
+#include <iostream>
 #include "NetObj.hpp"
 
 class BaseA : public NetObj {
