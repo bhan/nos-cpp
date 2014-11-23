@@ -24,8 +24,8 @@ class Agent {
   void Initialize() { // don't call more than once
     _mtx.lock();
     _should_exit = false;
-    std::thread(_forever_loop, std::ref(_mtx), std::ref(_name_to_NetObj),
-                std::ref(_should_exit)).detach();
+    std::thread(_run, std::ref(_mtx), std::ref(_name_to_NetObj),
+        std::ref(_should_exit)).detach();
   }
   void Exit() { // don't call more than once
     _mtx.lock();
@@ -38,7 +38,7 @@ class Agent {
       _mtx.unlock();
       throw std::runtime_error(name + "already assigned");
     }
-    _name_to_NetObj[name] = netObj;
+    _name_to_NetObj[name] = netObj; // TODO need GC info here
 //    std::cout << typeid(*netObj).name() << " " << name << " inserted"
 //      << std::endl;
     _mtx.unlock();
@@ -56,7 +56,7 @@ class Agent {
   Agent(const Agent&) {}
   Agent& operator=(const Agent&) { return *_instance; }
 
-  static void _forever_loop(std::mutex& mtx,
+  static void _run(std::mutex& mtx,
       std::unordered_map<std::string, NetObj*>& name_to_NetObj,
       bool& should_exit) {
     // thread initialization
@@ -65,12 +65,13 @@ class Agent {
     while (!should_exit) {
       mtx.unlock();
     }
+    // TODO cleanup
   }
 
   static Agent* _instance;
   std::unordered_map<std::string, NetObj*> _name_to_NetObj;
   std::mutex _mtx;
-  bool _should_exit;
+  bool _should_exit; // tell the detached thread to stop looping
   std::mutex _print_lock;
 };
 
