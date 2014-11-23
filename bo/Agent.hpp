@@ -64,6 +64,7 @@ class Agent {
     mtx.lock();
     while (!should_exit) {
       mtx.unlock();
+      // TODO add message receiver for Import and dispatch
     }
     // TODO cleanup
   }
