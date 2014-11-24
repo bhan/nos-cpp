@@ -30,13 +30,12 @@
 
 using namespace std;
 
-class TCPAcceptor
-{
+class TCPAcceptor {
     int    m_lsd;
     int    m_port;
     string m_address;
     bool   m_listening;
-    
+
   public:
     TCPAcceptor(int port, const char* address="");
     ~TCPAcceptor();

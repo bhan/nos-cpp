@@ -78,6 +78,17 @@ public:
         return call + closure;
     }
 
+    std::string HexDump() const {
+        std::string raw_serial = Serialize();
+        std::string dump;
+        for (int i = 0; i < raw_serial.size(); ++i) {
+            char buf[3];
+            sprintf(buf, "%02x", static_cast<unsigned char>(raw_serial[i]));
+            dump += buf;
+        }
+        return dump;
+    }
+
 private:
     typedef _Res (*_Call)(const Closure&, _Args...);
 

@@ -1,4 +1,3 @@
-#include <iostream>
 #include "tcpsockets/tcpacceptor.h"
 #include "NOSCommon.hpp"
 

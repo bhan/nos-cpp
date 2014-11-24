@@ -1,9 +1,10 @@
 c++ -std=c++11 -Wall -fPIC -c tcpstream.cpp tcpacceptor.cpp tcpconnector.cpp
 c++ -std=c++11 -shared -Wl,-install_name,libtcpsockets.so.1 -o libtcpsockets.so.1.0 *.o
 sudo cp libtcpsockets.so.1.0 /usr/lib
-
 sudo ln -sf /usr/lib/libtcpsockets.so.1.0 /usr/lib/libtcpsockets.so.1
 sudo ln -sf /usr/lib/libtcpsockets.so.1.0 /usr/lib/libtcpsockets.so
+make -f Makefile.library
+
 
 # -dynamiclib
 # otool -L ../tcpsockets/libtcpsockets.so.1.0
@@ -12,19 +13,19 @@ c++ -std=c++11 -I/Users/bm/nos-c/ -ltcpsockets NOSDaemon.cpp NOSCommon.cpp -o se
 c++ -std=c++11 -I/Users/bm/nos-c/ -ltcpsockets NOSClient.cpp NOSCommon.cpp -o client
 
 c++ -std=c++11  -I/Users/bm/nos-c/ -ltcpsockets SerializableClosureExample.cpp NOSClient.cpp NOSCommon.cpp
-
+c++ -std=c++11  -I/Users/bm/nos-c/ -ltcpsockets SerializableClosureExample.cpp NOSClient.cpp NOSCommon.cpp FooProxy.cpp
 
 
 // Client sends a set request to Foo::var1
 RPCResponse Foo::set_var1(int32_t &val) {
-    auto set_var1_delegate = [](int32_t &closure_val) -> Function<RPCResponse(FooServerProxy*)> {
+    auto delegate_method = [](int32_t &closure_val) -> Function<RPCResponse(FooServerProxy*)> {
         auto x = [=](FooServerProxy *obj){ return obj->set_var1(closure_val); };
         return x;
     }(val);
 
     auto thunk = serialize( {
         ObjectID: this.objectID,
-        Action: set_var1_delegate.Save(),
+        Action: delegate_method.Serialize(),
     } );
 
     return NOSClient::send(thunk);
@@ -33,15 +34,15 @@ RPCResponse Foo::set_var1(int32_t &val) {
 
 // Server receives a method call request for a Foo object
 static RPCResponse FooServerProxy::handleIncomingRequest(auto thunk) {
-    objectID, method_delegate_compressed = deserialize(thunk);
+    objectID, compressed_delegate_method = deserialize(thunk);
     // never use operator[] because it creates a new key if not exists!!!
     if (_FooServerProxyObjectsTable.find(objectID) == m.end()) {
         return RPCResponse( /object not found!/ );
 
     } else {
         FooServerProxy *obj = _FooServerProxyObjectsTable.at( objectID );
-        auto method_delegate = Function<RPCResponse(FooServerProxy*)>::Load(method_delegate_compressed);
-        method_delegate( obj ); // will call obj->method(/closure vars/);
+        auto delegate_method = Function<RPCResponse(FooServerProxy*)>::Load(compressed_delegate_method);
+        delegate_method( obj ); // will call obj->method(/closure vars/);
     }
 }
 
@@ -62,14 +63,14 @@ int32_t Foo::get_var1(int32_t &val) {
 
     auto thunk = serialize( {
         ObjectID: this.objectID,
-        Action: get_var1_delegate.Save(),
+        Action: get_var1_delegate.Serialize(),
     } );
 
-    auto RPCResponse = NOSClient::send(thunk);
-    serverResponseCode, eval_get_delegate_compressed = deserialize(RPCResponse);
+    RPCResponse response = NOSClient::send(thunk);
+    server_response_code, compressed_return_value_method = deserialize(response);
 
-    if (serverResponseCode != OK) throw new Exception(serverResponseCode);
-    return Function<int32_t()>::Load(eval_get_delegate_compressed)( );   // extract and eval the function
+    if (server_response_code != OK) throw new Exception(server_response_code);
+    return Function<int32_t()>::Load(compressed_return_value_method)( );   // extract and eval the function
 }
 
 
@@ -81,3 +82,65 @@ int32_t Foo::get_var1(int32_t &val) {
 int32_t FooServerProxy::get_var1() {
     return _var1;
 }
+
+
+
+
+
+// ========================================================================================================================
+
+/*
+    All client-side proxy methods have the following well-defined format -
+
+    1) Generate a closure to call the ServerProxy method with the variables
+    2) Generate the thunk with the serialized objectID and closure to send over the wire
+    3) Send thunk over and expect a thunk back
+    4) Extract the return thunk
+    5) throw exception if the server response is not OK (i.e. "no such object with ID", etc), and leave it to the programmer to customize handline the exceptions
+    6) De-serialize the closure, which is expected to NOT intake any arguments, and expected to return a value of type decltype(this proxy method's return signature), even if it's void (the IDL compiler can optimize this to not generate this step for object attribute setter methods, since setter methods always return void)
+
+*/
+
+// IDL specification
+struct Foo {
+    custom_method u32(vector<string>, bool);
+}
+
+// Means that the method will pass in a vector of strings and a bool, and expect a uint32_t returned, so the IDL compiler will generate this:
+
+uint32_t Foo::custom_method(std::vector<std::string> &val1,  bool &val2) {
+    // Create a lambda to generate the serializable closure, then calls it to get the actual serializable closure object
+    auto delegate_method = [](std::vector<std::string> &closure_val1,  bool &closure_val2) -> Function<RPCResponse(FooServerProxy*)> {
+        // It must be [=] because we are capturing by value, NOT reference
+        auto x = [=](FooServerProxy *obj){ return obj->custom_method(closure_val1, closure_val2); };
+        return x;
+    }(val1, val2);
+
+    auto thunk = serialize( {
+        ClassID:  this.classID,
+        ObjectID: this.objectID,
+        Action:   delegate_method.Serialize(),
+    } );
+
+    RPCResponse response = NOSClient::send(thunk);
+    server_response_code, compressed_return_value_method = deserialize(response);
+
+    // It is up to the users to customize this, but the default is that this method will throw if response is not OK
+    if (server_response_code != OK) {
+        throw new Exception(server_response_code);
+    }
+
+    // extract and eval the function, which will output the desired uint32_t
+    return Function<uint32_t()>::Load(compressed_return_value_method)( );
+}
+
+
+// The user will then be able to call something like this:
+
+// Will either return a uint32_t or throw a server response exception
+uint32_t x = obj.custom_method(string_arr, true);
+
+
+// While this looks like a lot of code, the bulk of it is boiler-plate and not type/value-dependent.
+// This is only a small code sample, but the final version will probably have more things like try-catch blocks for failing to send thunks over the wire.
+

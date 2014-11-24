@@ -31,8 +31,7 @@
 
 using namespace std;
 
-class TCPStream
-{
+class TCPStream {
     int     m_sd;
     string  m_peerIP;
     int     m_peerPort;
@@ -57,7 +56,7 @@ class TCPStream
 
   private:
     bool waitForReadEvent(int timeout);
-    
+
     TCPStream(int sd, struct sockaddr_in* address);
     TCPStream();
     TCPStream(const TCPStream& stream);

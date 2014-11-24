@@ -26,18 +26,15 @@
 #include <arpa/inet.h>
 #include "tcpacceptor.h"
 
-TCPAcceptor::TCPAcceptor(int port, const char* address) 
-    : m_lsd(0), m_port(port), m_address(address), m_listening(false) {} 
+TCPAcceptor::TCPAcceptor(int port, const char* address) : m_lsd(0), m_port(port), m_address(address), m_listening(false) {}
 
-TCPAcceptor::~TCPAcceptor()
-{
+TCPAcceptor::~TCPAcceptor() {
     if (m_lsd > 0) {
         close(m_lsd);
     }
 }
 
-int TCPAcceptor::start()
-{
+int TCPAcceptor::start() {
     if (m_listening == true) {
         return 0;
     }
@@ -50,20 +47,19 @@ int TCPAcceptor::start()
     address.sin_port = htons(m_port);
     if (m_address.size() > 0) {
         inet_pton(PF_INET, m_address.c_str(), &(address.sin_addr));
-    }
-    else {
+    } else {
         address.sin_addr.s_addr = INADDR_ANY;
     }
-    
+
     int optval = 1;
-    setsockopt(m_lsd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval); 
-    
+    setsockopt(m_lsd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
+
     int result = bind(m_lsd, (struct sockaddr*)&address, sizeof(address));
     if (result != 0) {
         perror("bind() failed");
         return result;
     }
-    
+
     result = listen(m_lsd, 5);
     if (result != 0) {
         perror("listen() failed");
@@ -73,8 +69,7 @@ int TCPAcceptor::start()
     return result;
 }
 
-TCPStream* TCPAcceptor::accept()
-{
+TCPStream* TCPAcceptor::accept() {
     if (m_listening == false) {
         return NULL;
     }

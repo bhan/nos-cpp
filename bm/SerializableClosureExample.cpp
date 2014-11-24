@@ -4,8 +4,9 @@
 #include <cstdio>
 #include <cstring>
 
-#include "Closure.hpp"
+#include "SerializableClosure.hpp"
 #include "NOSClient.hpp"
+#include "FooProxy.hpp"
 
 template<typename X> std::string Dump(const X& x) {
     const unsigned char *s = reinterpret_cast<const unsigned char*>(&x);
@@ -52,6 +53,10 @@ Function<bool(NOSClient*)> delegate(const std::string &buffer) {
     return x;
 }
 
+Function<double(FooProxy*)> foo_delegate(const std::string &str, bool t) {
+    auto x = [=](FooProxy *obj){ return obj->bar_method(str, t); };
+    return x;
+}
 
 void runInNewStack(NOSClient *client, const std::string &closure) {
     std::cout << "Serialized: " << closure << "\n";
@@ -78,9 +83,10 @@ int main(int argc, char** argv) {
 
 
     std::string my_commpressed_delegate = my_delegate.Serialize();
+    std::cout << "HexDump of method call: " << my_delegate.HexDump() << "\n";
     runInNewStack(client, my_commpressed_delegate);
 
 
-    std::cout << "We can call methods that take no parameter as well! - " << g(5)() << "\n";
+    std::cout << "We can call methods that take no parameters as well! - " << g(5)() << "\n";
     return 0;
 }

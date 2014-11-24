@@ -48,17 +48,13 @@ void NOSDaemon::handleConnection() {
     if (stream == NULL) return;
 
     std::string buffer;
-    ssize_t buffer_len;
-    char raw_buffer[1024];
+    receive_packet(stream, buffer);
 
-    while ((buffer_len = stream->receive(raw_buffer, sizeof(raw_buffer))) > 0) {
-        buffer.append(raw_buffer, buffer_len);
-        if (_debugMode) {
-            dump_tcp_trace(buffer);
-        }
-
-        stream_send(stream, " - OK GOT IT!");
+    if (_debugMode) {
+        dump_tcp_trace(buffer);
     }
+
+    send_packet(stream, " -> FULL PACKET RECEIVED!");
 
     delete stream;
 }
