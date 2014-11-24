@@ -14,5 +14,7 @@ Agent* Agent::_instance = NULL;
 
 int main() {
   std::string ip_addr = "localhost"; int port = 5555;
-  Agent::Instance()->Import("hello", port, ip_addr);
+  std::string name = "hello";
+  NetObj* netObj = Agent::Instance()->Import(name, port, ip_addr);
+  std::cout << name << " of type " << typeid(*netObj).name() << std::endl;
 }
