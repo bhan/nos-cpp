@@ -12,7 +12,7 @@ class AgentConnector {
   public:
     AgentConnector(char* agent_ip, int agent_port)
       : ip(agent_ip), port(agent_port), connector(TCPConnector()) {};
-    void export(NetObj netObj, string name) {
+    void exportObj(NetObj netObj, string name) {
     }
 };
 
