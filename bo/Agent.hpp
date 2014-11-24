@@ -11,6 +11,7 @@
 #include <unordered_map>
 
 #include "NetObj.hpp"
+#include "../tcpsockets/tcpacceptor.h"
 
 
 class Agent {
@@ -21,11 +22,11 @@ class Agent {
     }
     return _instance;
   }
-  void Initialize() { // don't call more than once
+  void Initialize(int port, std::string ip_addr) { // don't call more than once
     _mtx.lock();
     _should_exit = false;
     std::thread(_run, std::ref(_mtx), std::ref(_name_to_NetObj),
-        std::ref(_should_exit)).detach();
+        std::ref(_should_exit), std::ref(port), std::ref(ip_addr)).detach();
   }
   void Exit() { // don't call more than once
     _mtx.lock();
@@ -58,13 +59,22 @@ class Agent {
 
   static void _run(std::mutex& mtx,
       std::unordered_map<std::string, NetObj*>& name_to_NetObj,
-      bool& should_exit) {
+      volatile bool& should_exit, int& port, std::string& ip_addr) {
+    // thread holds lock here
     // thread initialization
-    mtx.unlock();
-    mtx.lock();
+    TCPAcceptor* acceptor = new TCPAcceptor(port, ip_addr.c_str());
+    if (acceptor->start() != 0) {
+      std::cout << "Agent failed to start TCP acceptor" << std::endl;
+      mtx.unlock();
+      exit(1);
+    }
+    std::cout << "Agent started at " << ip_addr << ":" << port << std::endl;
+
     while (!should_exit) {
       mtx.unlock();
       // TODO add message receiver for Import and dispatch
+      // read message from tcp socket
+      mtx.lock();
     }
     // TODO cleanup
   }
@@ -72,8 +82,7 @@ class Agent {
   static Agent* _instance;
   std::unordered_map<std::string, NetObj*> _name_to_NetObj;
   std::mutex _mtx;
-  bool _should_exit; // tell the detached thread to stop looping
-  std::mutex _print_lock;
+  volatile bool _should_exit; // tell the detached thread to stop looping
 };
 
 #endif /*  _AGENT_H */

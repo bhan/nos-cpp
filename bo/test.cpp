@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include <typeinfo>
 
 #include "Agent.hpp"
@@ -36,7 +37,8 @@ int main() {
       std::cout << typeid(typeUtilARef).name() << " " << typeid(typeUtilARef).hash_code() << std::endl;
   }
 //  std::cout << typeid(*typeUtilA).name() << " " << typeid(*typeUtilA).hash_code() << std::endl;
-  Agent::Instance()->Initialize();
+  std::string ip_addr = "localhost"; int port = 8888;
+  Agent::Instance()->Initialize(port, ip_addr);
   BaseA* helloObj = new BaseA();
   Agent::Instance()->Export("hello", helloObj);
   Agent::Instance()->Export("goodbye", helloObj);
