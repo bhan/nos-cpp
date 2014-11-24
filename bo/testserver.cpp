@@ -37,11 +37,13 @@ int main() {
       std::cout << typeid(typeUtilARef).name() << " " << typeid(typeUtilARef).hash_code() << std::endl;
   }
 //  std::cout << typeid(*typeUtilA).name() << " " << typeid(*typeUtilA).hash_code() << std::endl;
-  std::string ip_addr = "localhost"; int port = 8888;
+  std::string ip_addr = "localhost"; int port = 5555;
   Agent::Instance()->Initialize(port, ip_addr);
   BaseA* helloObj = new BaseA();
   Agent::Instance()->Export("hello", helloObj);
   Agent::Instance()->Export("goodbye", helloObj);
   Agent::Instance()->PrintExported();
-  Agent::Instance()->Exit();
+//  Agent::Instance()->Exit();
+  while (1) {
+  }
 }

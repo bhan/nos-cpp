@@ -73,7 +73,7 @@ int TCPAcceptor::start()
     return result;
 }
 
-TCPStream* TCPAcceptor::accept() 
+TCPStream* TCPAcceptor::accept()
 {
     if (m_listening == false) {
         return NULL;
