@@ -1,5 +1,7 @@
 #include "tcpsockets/tcpacceptor.h"
 #include "NOSCommon.hpp"
+#include "RPCRequest.hpp"
+#include "RPCResponse.hpp"
 
 class NOSDaemon : private NOSCommon, private TCPAcceptor {
 public:
@@ -7,7 +9,10 @@ public:
     NOSDaemon(uint32_t port);
 
     bool start();
-    void handleConnection();
+    void handleRequest();
+
+protected:
+	RPCRequest rpc_receive(TCPStream* stream);
 
 private:
     uint32_t _port;

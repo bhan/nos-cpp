@@ -43,19 +43,29 @@ bool NOSDaemon::start() {
     return true;
 }
 
-void NOSDaemon::handleConnection() {
+RPCRequest NOSDaemon::rpc_receive(TCPStream* stream) {
+    std::string buffer;
+    receive_packet(stream, buffer);
+
+    RPCRequest request = RPCRequest::load_packet(buffer);
+    if (_debugMode) {
+        std::cerr << "Request:" << request.to_str() << "\n";
+    }
+    return request;
+}
+
+void NOSDaemon::handleRequest() {
     TCPStream* stream = TCPAcceptor::accept();
     if (stream == NULL) return;
 
     std::string buffer;
     receive_packet(stream, buffer);
 
-    if (_debugMode) {
-        dump_tcp_trace(buffer);
-    }
+    RPCResponse response;
+    response.Code = ServerCode::FAIL;
+    response.Body = " -> FULL PACKET RECEIVED!";
 
-    send_packet(stream, " -> FULL PACKET RECEIVED!");
-
+    send_packet(stream, response.packet());
     delete stream;
 }
 
@@ -69,7 +79,7 @@ int main(int argc, char** argv) {
     if (not daemon->start()) { exit(1); }
 
     while (1) {
-        daemon->handleConnection();
+        daemon->handleRequest();
     }
 
     exit(0);

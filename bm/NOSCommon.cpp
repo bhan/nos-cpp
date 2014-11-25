@@ -3,6 +3,8 @@
 #include <ctime>
 #include "NOSCommon.hpp"
 
+const std::string NOSCommon::NOS_PACKET_SIGNATURE = "NOSPKT";
+
 std::string NOSCommon::uint32_to_byte_array(uint32_t n) {
     return std::string((char*)&n, sizeof(uint32_t));
 }
@@ -23,18 +25,23 @@ std::string NOSCommon::timestamp() {
 }
 
 void NOSCommon::send_header(TCPStream *stream, const std::string &buffer) {
-    std::string header_msg = string("NOSPKT") + uint32_to_byte_array(buffer.size());
-    stream->send(header_msg.c_str(), header_msg.size());
+    std::string header = NOS_PACKET_SIGNATURE + uint32_to_byte_array(buffer.size());
+    stream->send(header.c_str(), header.size());
+    if (_debugMode) {
+        dump_tcp_trace(header, true);
+    }
 }
 
 uint32_t NOSCommon::receive_header(TCPStream *stream) {
-    std::string header; header.resize(10);    // "NOSPKT" + <uint32_t converted to bytearray> is 10 bytes total
+    std::string header; header.resize(NOS_PACKET_SIGNATURE.size() + sizeof(uint32_t));
     size_t header_len = 0;
     if ((header_len = stream->receive((char*)header.c_str(), header.size())) < header.size()) {
         throw new exception();
     }
-    dump_tcp_trace(header);
-    return byte_array_to_uint32( header.substr(6) );
+    if (_debugMode) {
+        dump_tcp_trace(header, false);
+    }
+    return byte_array_to_uint32( header.substr(NOS_PACKET_SIGNATURE.size()) );
 }
 
 uint32_t NOSCommon::send_packet(TCPStream *stream, const std::string &buffer) {
@@ -48,6 +55,10 @@ uint32_t NOSCommon::send_packet(TCPStream *stream, const std::string &buffer) {
         stream->send(&buffer.c_str()[current_ptr], remaining_size >= TCP_BUFFER_SIZE ? TCP_BUFFER_SIZE : remaining_size);
     }
 
+    if (_debugMode) {
+        dump_tcp_trace(buffer, true);
+    }
+
     // return the number of chunks sent
     return num_packets_sent;
 }
@@ -56,10 +67,10 @@ void NOSCommon::receive_packet(TCPStream *stream, std::string &dest_buffer) {
     // Read the header first; this will tell us the size of the packet coming down the pipe
     uint32_t expected_buffer_len = receive_header(stream);
 
-    // Resize buffer
+    // Resize buffer to the expected application packet length
     dest_buffer.resize(expected_buffer_len);
 
-    // Copy from TCP stream over to underlying C-string
+    // Copy from TCP stream over to the underlying C-string
     ssize_t buffer_len;
     uint32_t current_len=0;
     while (current_len < expected_buffer_len && (buffer_len = stream->receive( &((char*)dest_buffer.c_str())[current_len], TCP_BUFFER_SIZE )) > 0) {
@@ -68,14 +79,18 @@ void NOSCommon::receive_packet(TCPStream *stream, std::string &dest_buffer) {
 
     // Resize if necessary
     dest_buffer.resize(current_len);
+
+    if (_debugMode) {
+        dump_tcp_trace(dest_buffer, false);
+    }
 }
 
-void NOSCommon::dump_tcp_trace(const std::string &buffer, bool nohex) {
+void NOSCommon::dump_tcp_trace(const std::string &buffer, bool isSending, bool nohex) {
     unsigned char *ptr = (unsigned char *)buffer.c_str();
     size_t size = buffer.size();
     unsigned int width = nohex ? 0x40 : 0x10; // without the hex output, we can fit more on screen
 
-    std::cerr << "[" << timestamp() << "] RECEIVED TCP PACKET:\n";
+    std::cerr << "[" << timestamp() << "] " << (isSending ? "SENT" : "RECEIVED") << " TCP PACKET:\n";
     for (size_t i=0; i < size; i += width) {
         std::cerr  << setw(4) << setfill('0') << hex << i << ":  ";
 
@@ -87,7 +102,7 @@ void NOSCommon::dump_tcp_trace(const std::string &buffer, bool nohex) {
         }
 
         for (size_t k = 0; (k < width) && (i+k < size); k++) {
-            /* check for 0D0A; if found, skip past and start a new line of output */
+            // check for 0D0A; if found, skip past and start a new line of output
             if (nohex && (i+k+1 < size) && ptr[i+k]==0x0D && ptr[i+k+1]==0x0A) {
                 i+=(k+2-width);
                 break;
@@ -95,7 +110,7 @@ void NOSCommon::dump_tcp_trace(const std::string &buffer, bool nohex) {
 
             std::cerr << (((ptr[i+k]>=0x20) && (ptr[i+k]<0x80)) ? (char)ptr[i+k] : '.');
 
-            /* check again for 0D0A, to avoid an extra \n if it's at width */
+            // check again for 0D0A, to avoid an extra \n if it's at width
             if (nohex && (i+k+2 < size) && ptr[i+k+1]==0x0D && ptr[i+k+2]==0x0A) {
                 i+=(k+3-width);
                 break;
