@@ -24,7 +24,7 @@ if (NOT USE_SYSTEM_LIBCLANG AND
         SHOW_PROGRESS EXPECTED_MD5 "${CLANG_MD5}"
     )
 
-    execute_process(COMMAND tar -xzf ${CLANG_FILENAME})
+    execute_process(COMMAND tar -Jxf ${CLANG_FILENAME})
 
     message("searching ${CMAKE_CURRENT_BINARY_DIR}")
     execute_process(COMMAND
