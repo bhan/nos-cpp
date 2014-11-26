@@ -49,8 +49,10 @@ Function<int()> g(int i) {
 }
 
 Function<bool(NOSClient*)> delegate(const std::string &buffer) {
-    auto x = [=](NOSClient *client){ return client->send(buffer); };
-    return x;
+    return [=](NOSClient *client){
+        std::string response;
+        return client->send(buffer, response);
+    };
 }
 
 Function<double(FooProxy*)> foo_delegate(const std::string &str, bool t) {
@@ -60,7 +62,7 @@ Function<double(FooProxy*)> foo_delegate(const std::string &str, bool t) {
 
 void runInNewStack(NOSClient *client, const std::string &closure) {
     std::cout << "Serialized: " << closure << "\n";
-    std::cout << "Serialized: " << Dumpstr(closure) << "\n";
+    // std::cout << "Serialized: " << Dumpstr(closure) << "\n";
     std::cout << "Byte-size of closure: " << closure.size() << "\n";
     auto uncompressed_function = Function<bool(NOSClient*)>::Load(closure);
     uncompressed_function(client);
@@ -77,15 +79,16 @@ int main(int argc, char** argv) {
     // auto my_delegate = delegate("Hello delegate method!");
 
     auto my_delegate = [](const std::string &buffer) -> Function<bool(NOSClient*)> {
-        auto x = [=](NOSClient *client){ return client->send(buffer); };
-        return x;
+        return [=](NOSClient *client){
+            std::string response;
+            return client->send(buffer, response);
+        };
     }("It's code, bra.");
 
 
     std::string my_commpressed_delegate = my_delegate.Serialize();
     std::cout << "HexDump of method call: " << my_delegate.HexDump() << "\n";
     runInNewStack(client, my_commpressed_delegate);
-
 
     std::cout << "We can call methods that take no parameters as well! - " << g(5)() << "\n";
     return 0;

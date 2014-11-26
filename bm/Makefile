@@ -1,21 +1,28 @@
-CC		= c++ -std=c++11
-CFLAGS		= -g -c -Wall
-LDFLAGS		= -ltcpsockets
-SOURCES		= client.cpp tcpstream.cpp tcpconnector.cpp
+CC			= c++ -std=c++11
+CFLAGS		= -g -Wall
 INCLUDES	= -I..
-OBJECTS		= $(SOURCES:.cpp=.o)
-TARGETS		= client server
+LINKERS		= -L. -L../tcpsockets
+TARGETLIB	= libnos
 
 all: server client
 
+libtcpsockets:
+	cd ../tcpsockets && make -f Makefile.library
+
+$(TARGETLIB): libtcpsockets
+	$(CC) $(CFLAGS) $(INCLUDES) -c RPCRequest.cpp RPCResponse.cpp NOSCommon.cpp NOSDaemon.cpp NOSClient.cpp
+	$(CC) -shared -ltcpsockets -Wl,-install_name,$(TARGETLIB).so.1 -o $(TARGETLIB).so.1.0 *.o
+	ln -sf $(TARGETLIB).so.1.0 $(TARGETLIB).so
+	ln -sf $(TARGETLIB).so.1.0 $(TARGETLIB).so.1
+
+server: $(TARGETLIB)
+	$(CC) $(CFLAGS) $(INCLUDES) $(LINKERS) -lnos -ltcpsockets NOSDaemonExample.cpp -o server
+
+client: $(TARGETLIB)
+	$(CC) $(CFLAGS) $(INCLUDES) $(LINKERS) -lnos -ltcpsockets NOSClientExample.cpp -o client
+
+closure: $(TARGETLIB)
+	$(CC) $(CFLAGS) $(INCLUDES) $(LINKERS) -lnos -ltcpsockets SerializableClosureExample.cpp FooProxy.cpp -o closure
+
 clean:
-	rm -rf $(OBJECTS) $(TARGETS)
-
-server:
-	$(CC) $(INCLUDES) $(LDFLAGS) NOSDaemon.cpp NOSCommon.cpp RPCRequest.cpp RPCResponse.cpp -o server
-
-client:
-	$(CC) $(INCLUDES) $(LDFLAGS) NOSClient.cpp NOSCommon.cpp RPCRequest.cpp RPCResponse.cpp NOSClientExample.cpp -o client
-
-closure:
-	$(CC) $(INCLUDES) $(LDFLAGS) SerializableClosureExample.cpp NOSClient.cpp NOSCommon.cpp FooProxy.cpp -o closure
+	rm -rf *.o *.so *.so.1 *.so.1.0 server client *.dSYM

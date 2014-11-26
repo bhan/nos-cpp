@@ -4,21 +4,23 @@ LDFLAGS		=
 SOURCES		= tcpstream.cpp tcpconnector.cpp tcpacceptor.cpp
 INCLUDES	= -I.
 OBJECTS		= $(SOURCES:.cpp=.o)
-TARGET		= libtcpsockets
+TARGETLIB	= libtcpsockets
 
-all: $(OBJECTS) $(TARGET)
+all: $(OBJECTS) $(TARGETLIB)
 
-$(TARGET): $(OBJECTS)
-	$(CC) -shared -Wl,-install_name,libtcpsockets.so.1 -o libtcpsockets.so.1.0 $(OBJECTS)
+$(TARGETLIB): $(OBJECTS)
+	$(CC) -shared -Wl,-install_name,$(TARGETLIB).so.1 -o $(TARGETLIB).so.1.0 $(OBJECTS)
+	ln -sf $(TARGETLIB).so.1.0 $(TARGETLIB).so
+	ln -sf $(TARGETLIB).so.1.0 $(TARGETLIB).so.1
 
 .cpp.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -fPIC $<
 
-install: $(TARGET)
+install: $(TARGETLIB)
 	cp libtcpsockets.so.1.0 /usr/lib
 	ln -sf /usr/lib/libtcpsockets.so.1.0 /usr/lib/libtcpsockets.so.1
 	ln -sf /usr/lib/libtcpsockets.so.1.0 /usr/lib/libtcpsockets.so
 
 clean:
-	rm -rf $(OBJECTS) $(TARGET)
+	rm -rf $(OBJECTS) $(TARGETLIB)
 
