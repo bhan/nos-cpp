@@ -18,6 +18,7 @@ enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClientData)
     }
     return CXChildVisit_Continue;
 }
+
 enum CXChildVisitResult classPrinter(CXCursor cursor, CXCursor, CXClientData) {
     if (cursor.kind == CXCursorKind::CXCursor_ClassDecl) {
         CXString str = clang_getCursorDisplayName(cursor);
@@ -28,6 +29,28 @@ enum CXChildVisitResult classPrinter(CXCursor cursor, CXCursor, CXClientData) {
     }
 
     return CXChildVisit_Continue;
+}
+
+bool checkForOutputErrors(CXTranslationUnit tu) {
+    bool fatalError = false;
+
+    unsigned int numDiagnostics = clang_getNumDiagnostics(tu);
+    for (unsigned int diagIdx = 0; diagIdx < numDiagnostics; diagIdx++) {
+        CXDiagnostic diag = clang_getDiagnostic(tu, diagIdx);
+
+        CXString diagCategoryStr = clang_getDiagnosticCategoryText(diag);
+        CXString diagText = clang_getDiagnosticSpelling(diag);
+
+        CXDiagnosticSeverity diagSeverity = clang_getDiagnosticSeverity(diag);
+        if (diagSeverity >= CXDiagnostic_Fatal) {
+            fatalError = true;
+        }
+
+        std::cerr << clang_getCString(diagCategoryStr) << "(" << diagSeverity <<
+                    "): " << clang_getCString(diagText) << std::endl;
+    }
+
+    return fatalError;
 }
 
 void usage(const char* executable_name) {
@@ -42,6 +65,10 @@ int main(int argc, char* argv[]) {
 
     CXIndex index = clang_createIndex(0, 0);
     CXTranslationUnit transUnit = clang_parseTranslationUnit(index, 0, argv, argc, 0, 0, CXTranslationUnit_None);
+
+    if (checkForOutputErrors(transUnit)) {
+        std::cerr << "WARNING: Compilation unit has errors. Please fix them!" << std::endl;
+    }
 
     CXCursor cursor = clang_getTranslationUnitCursor(transUnit);
     clang_visitChildren(cursor, classPrinter, nullptr);
