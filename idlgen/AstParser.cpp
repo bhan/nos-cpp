@@ -15,6 +15,10 @@ enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClientData)
         CXString str = clang_getCursorDisplayName(cursor);
         std::cout << "  Constructor: " << clang_getCString(str) << std::endl;
         clang_disposeString(str);
+    } else if (cursor.kind == CXCursorKind::CXCursor_CXXBaseSpecifier) {
+        CXString str = clang_getCursorDisplayName(cursor);
+        std::cout << "  Base: " << clang_getCString(str) << std::endl;
+        clang_disposeString(str);
     }
     return CXChildVisit_Continue;
 }
