@@ -13,6 +13,9 @@ agent:
 classes:
 	$(CPP) $(ARGS) BaseA.hpp BaseAGenerated.hpp BaseB.hpp BaseBGenerated.hpp
 
+serialize:
+	$(CPP) $(ARGS) Serialize.hpp
+
 testserver: agent classes utils
 	$(CPP) $(ARGS) -o testserver.out $(TCP_CLASSES) testserver.cpp $(LD)
 

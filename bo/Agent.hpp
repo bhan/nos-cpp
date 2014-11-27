@@ -11,6 +11,7 @@
 #include <thread>
 #include <unordered_map>
 
+#include "Codes.hpp"
 #include "NetObj.hpp"
 #include "TypeUtil.hpp"
 #include "../tcpsockets/tcpacceptor.h"
@@ -48,8 +49,6 @@
   } \
  )
 
-enum class MessageType : char { invalid, get_type, invoke };
-
 class Agent {
  public:
   static Agent* Instance() {
@@ -77,7 +76,7 @@ class Agent {
     TCPStream* stream = connector->connect(ip_addr.c_str(), port);
     if (stream == NULL) { goto cleanup_connector; }
 
-    message_type = static_cast<char>(MessageType::get_type); // char, so no endian worry
+    message_type = static_cast<char>(MessageCode::get_type); // char, so no endian worry
     STREAM_SEND((const char*)&message_type, sizeof(message_type));
     if (sent < 0) { goto cleanup_connector; }
 
@@ -104,9 +103,9 @@ class Agent {
     STREAM_RECV(type, type_len);
     if (recvd < 0) { goto cleanup_type; }
     type[type_len] = '\0';
-    std::cout << name << " of type " << type << std::endl;
-    return_res = _type_util.getClientObjFromName(type);
-cleanup_type: delete type;
+    std::cout << "Agent::Import " << name << " of type " << type << std::endl;
+    return_res = _type_util.getClientObjFromName(type, name, ip_addr, port);
+cleanup_type: delete[] type;
     }
 cleanup_connector: delete connector;
     return return_res;
@@ -159,8 +158,9 @@ cleanup_connector: delete connector;
       STREAM_RECV(&message_type, sizeof(message_type));
       if (recvd < 0) { goto cleanup_stream; }
 
-      switch (static_cast<MessageType>(message_type)) {
-        case MessageType::get_type: {
+      std::cout << "message_type " << (int)message_type << std::endl;
+      switch (static_cast<MessageCode>(message_type)) {
+        case MessageCode::get_type: {
           std::cout << "get_type" << std::endl;
 
           uint32_t name_len;
@@ -194,16 +194,50 @@ cleanup_connector: delete connector;
           }
 
 cleanup_get_type_response: mtx.unlock();
-cleanup_name: delete name;
+cleanup_name: delete[] name;
           break;
         }
-        case MessageType::invoke: {
+        case MessageCode::invoke: {
           std::cout << "invoke" << std::endl;
+          uint32_t buf_size;
+          STREAM_RECV((char*)&buf_size, sizeof(buf_size));
+          if (recvd < 0) { goto cleanup_stream; }
+          buf_size = ntohl(buf_size);
+
+          std::cout << "expecting buf of size " << buf_size << std::endl;
+          char* buf = new char[buf_size];
+          STREAM_RECV(buf, buf_size);
+          if (recvd < 0) { goto cleanup_buf; }
+          std::cout << "got buf of size " << buf_size << std::endl;
+
+          {
+          std::string name;
+          size_t start = Serialize::unpack(buf, 0, name);
+          std::cout << "invoke requested for " << name << std::endl;
+
+          mtx.lock();
+          auto it = name_to_NetObj.find(name);
+          // TODO: check existence
+          mtx.unlock();
+          char* res_buf; uint32_t res_buf_size;
+          it->second->dispatch(buf+start, res_buf, res_buf_size);
+          if (res_buf == nullptr) { goto cleanup_buf; }
+
+          uint32_t res_buf_size_wire = htonl(res_buf_size);
+          STREAM_SEND((char*)&res_buf_size_wire, sizeof(res_buf_size_wire));
+          if (sent < 0) { goto cleanup_res_buf; }
+
+          STREAM_SEND(res_buf, res_buf_size);
+          if (sent < 0) { goto cleanup_res_buf; }
+cleanup_res_buf: delete[] res_buf;
+          }
+
+cleanup_buf: delete[] buf;
           break;
         }
         default: {
           std::cout << "no valid message type received" << std::endl;
-          goto cleanup_stream;
+          break;
         }
       }
 cleanup_stream: delete stream;

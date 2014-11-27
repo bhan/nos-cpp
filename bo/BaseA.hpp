@@ -11,7 +11,11 @@ class BaseA : public NetObj {
     BaseA() {}
     virtual ~BaseA() {}
 
-    int increment() {
+    int32_t decrement() {
+      std::cout << "BaseA decrement() called" << std::endl;
+      return --_num;
+    }
+    int32_t increment() {
       std::cout << "BaseA increment() called" << std::endl;
       return ++_num;
     }

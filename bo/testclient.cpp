@@ -14,7 +14,7 @@ Agent* Agent::_instance = NULL;
 
 int main() {
   std::string ip_addr = "localhost"; int port = 5555;
-  std::string name = "hello";
-  NetObj* baseAClient = Agent::Instance()->Import(name, port, ip_addr);
-  std::cout << name << " of type " << typeid(*baseAClient).name() << std::endl;
+  BaseBClient* baseB = dynamic_cast<BaseBClient*>(Agent::Instance()->Import("BaseB", port, ip_addr));
+  baseB = dynamic_cast<BaseBClient*>(Agent::Instance()->Import("BaseB", port, ip_addr));
+  std::cout << "baseB->decrement(5): " << baseB->decrement(5) << std::endl;
 }

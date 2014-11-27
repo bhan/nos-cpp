@@ -5,6 +5,7 @@
 class NetObj {
  public:
   virtual ~NetObj() {}
+  virtual void dispatch(char* buf, char*& res_buf, uint32_t& res_buf_size) {}
 };
 
 #endif /* _NET_OBJ_H */

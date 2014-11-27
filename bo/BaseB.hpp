@@ -8,13 +8,19 @@
 class BaseB : public NetObj {
   public:
     BaseB() {}
+    BaseB(int32_t num) : _num(num) {}
     virtual ~BaseB() {}
 
-    int decrement() {
-      return --_num;
+    int32_t increment(int a) {
+      for (int i = 0; i < a; ++i) ++_num;
+      return _num;
+    }
+    int32_t decrement(int a) {
+      for (int i = 0; i < a; ++i) --_num;
+      return _num;
     }
   private:
-    int32_t _num = 0;
+    int32_t _num;
 };
 
 #endif /* _BASE_B_H */
