@@ -71,6 +71,8 @@ flags = [
 '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include',
 ]
 
+def DirectoryOfThisScript():
+  return os.path.dirname( os.path.abspath( __file__ ) )
 
 # Set this to the absolute path to the folder (NOT the file!) containing the
 # compile_commands.json file to use that instead of 'flags'. See here for
@@ -82,7 +84,7 @@ flags = [
 #
 # Most projects will NOT need to set this to anything; you can just change the
 # 'flags' list of compilation flags. Notice that YCM itself uses that approach.
-compilation_database_folder = '%s/build/compile_commands.json' % DirectoryOfThisScript()
+compilation_database_folder = '%s/build/' % DirectoryOfThisScript()
 
 if os.path.exists( compilation_database_folder ):
   database = ycm_core.CompilationDatabase( compilation_database_folder )
@@ -90,10 +92,6 @@ else:
   database = None
 
 SOURCE_EXTENSIONS = [ '.cpp', '.cxx', '.cc', '.c', '.m', '.mm' ]
-
-def DirectoryOfThisScript():
-  return os.path.dirname( os.path.abspath( __file__ ) )
-
 
 def MakeRelativePathsInFlagsAbsolute( flags, working_directory ):
   if not working_directory:
