@@ -18,6 +18,15 @@ if (NOT USE_SYSTEM_LIBCLANG AND
     set(CLANG_FILENAME "${CLANG_DIRNAME}.tar.xz")
 
     if (NOT EXISTS ${CLANG_FILENAME})
+        set(need_download true)
+    else()
+        file(MD5 ${CLANG_FILENAME} actual_md5)
+        if (NOT ${actual_md5} STREQUAL ${CLANG_MD5})
+            set(need_download true)
+        endif()
+    endif()
+
+    if (${need_download})
         message("Downloading Clang 3.5")
         file(
             DOWNLOAD "${CLANG_URL}/${CLANG_FILENAME}" "./${CLANG_FILENAME}"
