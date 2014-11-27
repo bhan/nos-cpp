@@ -1,9 +1,10 @@
+#pragma once
 #include "tcpsockets/tcpconnector.h"
 #include "NOSCommon.hpp"
 #include "RPCRequest.hpp"
 #include "RPCResponse.hpp"
 
-class NOSClient : private NOSCommon, private TCPConnector {
+class NOSClient : protected NOSCommon, protected TCPConnector {
 public:
     NOSClient(const std::string &address, uint32_t port, uint32_t timeout=10, bool debugMode=true);
 

@@ -25,18 +25,14 @@ void init_daemon(void) {
     close(fd);
 }
 
-NOSDaemon::NOSDaemon(uint32_t port, bool debugMode) : TCPAcceptor(port), _port(port), _debugMode(debugMode) {
-}
-
-NOSDaemon::NOSDaemon(uint32_t port) : NOSDaemon(port, true) {
-}
+NOSDaemon::NOSDaemon(uint32_t port, bool debugMode) : TCPAcceptor(port), _port(port), _debugMode(debugMode) { }
 
 bool NOSDaemon::start() {
     std::cerr << "Starting NOS daemon [port " << _port << "]... ";
     if (TCPAcceptor::start() != 0) {
         std::cerr << "Failed to start!\n"
                   << "In Unix systems, ports in range [0, 1023] are reserved for system use,\n"
-                  << "so please make sure you use sudo if you really want to use those ports!\n";
+                  << "so please make sure you use sudo if you want to use those ports!\n";
         return false;
     }
     std::cerr << "Startup successful!\n\n";

@@ -1,12 +1,12 @@
+#pragma once
 #include "tcpsockets/tcpacceptor.h"
 #include "NOSCommon.hpp"
 #include "RPCRequest.hpp"
 #include "RPCResponse.hpp"
 
-class NOSDaemon : private NOSCommon, private TCPAcceptor {
+class NOSDaemon : protected NOSCommon, protected TCPAcceptor {
 public:
-    NOSDaemon(uint32_t port, bool debugMode);
-    NOSDaemon(uint32_t port);
+    NOSDaemon(uint32_t port, bool debugMode=true);
 
     bool start();
     void handleRequest();

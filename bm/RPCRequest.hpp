@@ -1,3 +1,4 @@
+#pragma once
 
 struct RPCRequest {
     uint32_t UUID, ClassID, ObjectID;

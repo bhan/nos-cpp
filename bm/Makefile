@@ -25,4 +25,16 @@ closure: $(TARGETLIB)
 	$(CC) $(CFLAGS) $(INCLUDES) $(LINKERS) -lnos -ltcpsockets SerializableClosureExample.cpp FooProxy.cpp -o closure
 
 clean:
-	rm -rf *.o *.so *.so.1 *.so.1.0 server client *.dSYM
+	rm -rf *.o *.so *.so.1 *.so.1.0 server client fooclient fooserver *.dSYM
+
+foopack: $(TARGETLIB)
+	$(CC) $(INCLUDES) -c FooPack.cpp
+	$(CC) $(LINKERS) -shared -ltcpsockets -lnos -Wl,-install_name,libfoo.so.1 -o libfoo.so.1.0 FooPack.o
+	ln -sf libfoo.so.1.0 libfoo.so
+	ln -sf libfoo.so.1.0 libfoo.so.1
+
+fooclient: foopack
+	$(CC) $(CFLAGS) $(INCLUDES) $(LINKERS) -lnos -ltcpsockets -lfoo FooClientProxy.cpp -o fooclient
+
+fooserver: foopack
+	$(CC) $(CFLAGS) $(INCLUDES) $(LINKERS) -lnos -ltcpsockets -lfoo FooServerProxy.cpp -o fooserver

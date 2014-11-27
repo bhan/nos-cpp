@@ -1,3 +1,4 @@
+#pragma once
 
 enum ServerCode { OK, OBJECT_NOT_FOUND, FAIL, };
 
