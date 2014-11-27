@@ -1,22 +1,51 @@
 #include <clang-c/Index.h>
 #include <iostream>
+#include <string>
 
-enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClientData) {
-    CX_CXXAccessSpecifier access = clang_getCXXAccessSpecifier(cursor);
+#include "FunctionRep.hpp"
+
+enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClientData parserState) {
+    auto access = clang_getCXXAccessSpecifier(cursor);
     if (access != CX_CXXAccessSpecifier::CX_CXXPublic) {
         return CXChildVisit_Continue;
     }
 
-    if (cursor.kind == CXCursorKind::CXCursor_CXXMethod) {
-        CXString str = clang_getCursorDisplayName(cursor);
-        std::cout << "  Function: " << clang_getCString(str) << std::endl;
+    if (cursor.kind == CXCursorKind::CXCursor_CXXMethod || cursor.kind == CXCursorKind::CXCursor_Constructor) {
+        auto str = clang_getCursorSpelling(cursor);
+        std::string funcName(clang_getCString(str));
+        FunctionRep funcRep(funcName, cursor.kind == CXCursor_Constructor);
         clang_disposeString(str);
-    } else if (cursor.kind == CXCursorKind::CXCursor_Constructor) {
-        CXString str = clang_getCursorDisplayName(cursor);
-        std::cout << "  Constructor: " << clang_getCString(str) << std::endl;
-        clang_disposeString(str);
+
+        auto retType = clang_getCursorType(cursor);
+        auto retTypeCXStr = clang_getTypeSpelling(retType);
+        std::string retTypeStr(clang_getCString(retTypeCXStr));
+        if (retTypeStr.find(' ') != std::string::npos) {
+            funcRep.setReturnType(retTypeStr.substr(0, retTypeStr.find(' ')));
+        } else {
+            funcRep.setReturnType(retTypeStr);
+        }
+        clang_disposeString(retTypeCXStr);
+
+        int numArgs = clang_Cursor_getNumArguments(cursor);
+        for (int i = 0; i < numArgs; i++) {
+            CXCursor argCursor = clang_Cursor_getArgument(cursor, i);
+
+            // ret type
+            auto argType = clang_getCursorType(argCursor);
+            auto typeStr = clang_getTypeSpelling(argType);
+            std::string argTypeStr(clang_getCString(typeStr));
+            clang_disposeString(typeStr);
+
+            // arg name
+            auto argStr = clang_getCursorSpelling(argCursor);
+            std::string argName(clang_getCString(argStr));
+            clang_disposeString(argStr);
+
+            funcRep.addArgmument(argTypeStr, argName);
+        }
+        std::cout << (funcRep.isConstructor() ? "  Constructor: " : "  Function: ") << funcRep << std::endl;
     } else if (cursor.kind == CXCursorKind::CXCursor_CXXBaseSpecifier) {
-        CXString str = clang_getCursorDisplayName(cursor);
+        auto str = clang_getCursorDisplayName(cursor);
         std::cout << "  Base: " << clang_getCString(str) << std::endl;
         clang_disposeString(str);
     }
