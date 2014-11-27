@@ -27,21 +27,22 @@
         // lookup object
         Foo *obj = lookup_table(request.ObjectID)
 
-        // lookup method
-
+        // de-serialize args
         auto args = Serializer::unpack<std::tuple<int, double, std::string>>(request.Arguments);
-        obj->bar_method( std::get<0>(args), std::get<1>(args), std::get<2>(args) );
 
+        // bind the args to the method of the object
+        std::bind(&Foo::bar_method, obj, args);
 */
 
-void func(int a, const std::vector<int8_t> &b, double c, std::string &d) {
-    std::cout << "Inside function: "
-              << a << " "
-              << c << " "
-              << d << std::endl;
-    for (const auto &i : b) std::cout << int32_t(i) << std::endl;
-}
-
+struct Bar {
+    void func(int a, const std::vector<int8_t> &b, double c, std::string &d) {
+        std::cout << "Inside function: "
+                  << a << " "
+                  << c << " "
+                  << d << std::endl;
+        for (const auto &i : b) std::cout << int32_t(i) << std::endl;
+    }
+};
 int main(int argc, char** argv) {
     std::string packet;
     {
@@ -54,7 +55,9 @@ int main(int argc, char** argv) {
     }
 
     {
+        Bar *bar = new Bar();
         auto the_tuple = Serializer::unpack<std::tuple<int, std::vector<int8_t>, double, std::string>>(packet);
-        func( std::get<0>(the_tuple), std::get<1>(the_tuple), std::get<2>(the_tuple), std::get<3>(the_tuple) );
+        // func( std::get<0>(the_tuple), std::get<1>(the_tuple), std::get<2>(the_tuple), std::get<3>(the_tuple) );
+        std::bind(&Bar::func, bar, the_tuple);
     }
 }
