@@ -6,8 +6,6 @@ set(EXTERNAL_LIBCLANG_PATH "" CACHE PATH "Path to teh libclang library to use")
 if (NOT USE_SYSTEM_LIBCLANG AND
         NOT PATH_TO_LLVM_ROOT AND
         NOT EXTERNAL_LIBCLANG_PATH)
-    message("Downloading Clang 3.5")
-
     set(CLANG_URL "http://llvm.org/releases/3.5.0")
 
     if (APPLE)
@@ -19,13 +17,16 @@ if (NOT USE_SYSTEM_LIBCLANG AND
     endif()
     set(CLANG_FILENAME "${CLANG_DIRNAME}.tar.xz")
 
-    file(
-        DOWNLOAD "${CLANG_URL}/${CLANG_FILENAME}" "./${CLANG_FILENAME}"
-        SHOW_PROGRESS EXPECTED_MD5 "${CLANG_MD5}"
-    )
+    if (NOT EXISTS ${CLANG_FILENAME})
+        message("Downloading Clang 3.5")
+        file(
+            DOWNLOAD "${CLANG_URL}/${CLANG_FILENAME}" "./${CLANG_FILENAME}"
+            SHOW_PROGRESS EXPECTED_MD5 "${CLANG_MD5}"
+        )
 
-    message("Extracting Clang 3.5")
-    execute_process(COMMAND tar -Jxf ${CLANG_FILENAME})
+        message("Extracting Clang 3.5")
+        execute_process(COMMAND tar -Jxf ${CLANG_FILENAME})
+    endif()
 
     message("searching ${CMAKE_CURRENT_BINARY_DIR}")
     execute_process(COMMAND
