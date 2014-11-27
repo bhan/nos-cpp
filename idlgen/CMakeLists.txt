@@ -1,3 +1,13 @@
+# Build ctemplate
+include(ExternalProject)
+ExternalProject_add(ctemplate
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ctemplate
+    CONFIGURE_COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/ctemplate/configure --prefix=<INSTALL_DIR>
+    BUILD_COMMAND ${MAKE})
+set(LIBCTEMPLATE_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ctemplate-prefix)
+set(LIBCTEMPLATE_TARGET ${LIBCTEMPLATE_PREFIX}/lib/libctemplate.a)
+set(LIBCTEMPLATE_INCLUDES_DIR ${LIBCTEMPLATE_PREFIX}/include)
+
 option(USE_SYSTEM_LIBCLANG "Set to ON to use the system libclang library" OFF)
 set(PATH_TO_LLVM_ROOT "" CACHE PATH "Path to the root of an LLVM+Clang binary distribution")
 set(EXTERNAL_LIBCLANG_PATH "" CACHE PATH "Path to teh libclang library to use")
@@ -76,11 +86,10 @@ if (APPLE)
   set( CMAKE_INCLUDE_SYSTEM_FLAG_CXX "-isystem " )
 endif()
 
-include_directories(SYSTEM ${CLANG_INCLUDES_DIR})
+include_directories(SYSTEM ${CLANG_INCLUDES_DIR} ${LIBCTEMPLATE_INCLUDES_DIR})
 
 # Now build our tools
 add_executable(idlgen AstParser.cpp)
 
-# Find the libraries that correspond to the LLVM components
-# that we wish to use
-target_link_libraries(idlgen ${LIBCLANG_TARGET})
+# link against libclang and also libctemplate
+target_link_libraries(idlgen ${LIBCLANG_TARGET} ${LIBCTEMPLATE_TARGET})
