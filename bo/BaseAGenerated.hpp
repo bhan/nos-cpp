@@ -5,9 +5,12 @@
 #include <iostream>
 #include <string>
 #include "BaseA.hpp"
-#include "ClientObj.hpp"
+#include "NetObj.hpp"
+
+class Agent;
 
 class BaseAServer : public BaseA { // used by the server
+  friend class BaseAAgent;
   public:
     BaseAServer() : _base(new BaseA()) {}
     int32_t decrement() {
@@ -22,8 +25,24 @@ class BaseAServer : public BaseA { // used by the server
       std::cout << "BaseAServer dispatch() called" << std::endl;
       return nullptr;
     }
-  private:
-    BaseA* _base;
+ private:
+  BaseA* _base;
+  Agent* _agent;
+  std::string _name;
+};
+
+class BaseAAgent: public BaseA, public AgentObj {
+ public:
+  BaseAAgent(NetObj* obj, std::string name, Agent* agent) {
+    BaseAServer* baseAServer = dynamic_cast<BaseAServer*>(obj);
+    _base = baseAServer->_base;
+    baseAServer->_name = name;
+    baseAServer->_agent = agent;
+  }
+  void dispatch(char* buf, char*& res_buf, uint32_t& res_buf_size) {
+  }
+ private:
+  BaseA* _base;
 };
 
 class BaseAClient : public BaseA, public ClientObj {

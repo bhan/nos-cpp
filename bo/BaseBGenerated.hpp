@@ -7,7 +7,7 @@
 #include <stdexcept>
 
 #include "BaseB.hpp"
-#include "ClientObj.hpp"
+#include "NetObj.hpp"
 #include "Codes.hpp"
 #include "Serialize.hpp"
 #include "../tcpsockets/tcpconnector.h"
@@ -42,14 +42,32 @@
   } \
  )
 
+class Agent; // forward declare Agent in Agent.hpp
+
 class BaseBServer : public BaseB {
+  friend class BaseBAgent;
  public:
   BaseBServer(int32_t num) : _base(new BaseB(num)) {}
+  ~BaseBServer() {}
   int32_t decrement(int32_t a) {
     return _base->decrement(a);
   }
   int32_t increment(int32_t a) {
     return _base->decrement(a);
+  }
+ private:
+  BaseB* _base;
+  Agent* _agent;
+  std::string _name;
+};
+
+class BaseBAgent : public AgentObj {
+ public:
+  BaseBAgent(NetObj* obj, std::string name, Agent* agent) {
+    BaseBServer* baseBServer = dynamic_cast<BaseBServer*>(obj);
+    _base = baseBServer->_base;
+    baseBServer->_name = name;
+    baseBServer->_agent = agent;
   }
   void dispatch(char* buf, char*& res_buf, uint32_t& res_buf_size) {
     std::cout << "BaseAServer dispatch() called" << std::endl;
@@ -61,7 +79,7 @@ class BaseBServer : public BaseB {
         std::cout << "dispatch: decrement" << std::endl;
         int32_t a;
         start = Serialize::unpack(buf, start, a);
-        int32_t res = this->decrement(a);
+        int32_t res = _base->decrement(a);
         res_buf_size = Serialize::size(res);
         res_buf = new char[res_buf_size];
         start = Serialize::pack(res_buf, 0, res);

@@ -18,8 +18,6 @@
 #include "../tcpsockets/tcpconnector.h"
 #include "../tcpsockets/tcpstream.h"
 
-#pragma pack(4)
-
 #define STREAM_SEND(BUF, SIZE) \
  ( \
    { \
@@ -49,6 +47,15 @@
   } \
  )
 
+class ObjEntry {
+ public:
+  AgentObj* agentObj;
+  bool server_deleted; // delete has been called on corresponding server obj
+  time_t renewed;
+  ObjEntry(AgentObj* obj_, bool server_deleted_, time_t renewed_)
+    : agentObj(obj_), server_deleted(server_deleted_), renewed(renewed_) {}
+};
+
 class Agent {
  public:
   static Agent* Instance() {
@@ -59,7 +66,7 @@ class Agent {
   }
   void Initialize(int port, std::string ip_addr) { // don't call more than once
     _should_exit = false;
-    std::thread(_run, std::ref(_mtx), std::ref(_name_to_NetObj),
+    std::thread(_run, std::ref(_mtx), std::ref(_name_to_obj),
         std::ref(_should_exit), port, std::ref(ip_addr)).detach();
   }
   void Exit() { // assumes Initialize was called, don't call more than once
@@ -67,10 +74,10 @@ class Agent {
     _should_exit = true;
     _mtx.unlock();
   }
-  NetObj* Import(std::string name, int port, std::string ip_addr) {
+  ClientObj* Import(std::string name, int port, std::string ip_addr) {
     char message_type; uint32_t name_len;
     ssize_t sent_ttl; ssize_t sent; ssize_t recvd; ssize_t recvd_ttl;
-    NetObj* return_res = NULL;
+    ClientObj* return_res = NULL;
 
     TCPConnector* connector = new TCPConnector();
     TCPStream* stream = connector->connect(ip_addr.c_str(), port);
@@ -104,7 +111,7 @@ class Agent {
     if (recvd < 0) { goto cleanup_type; }
     type[type_len] = '\0';
     std::cout << "Agent::Import " << name << " of type " << type << std::endl;
-    return_res = _type_util.getClientObjFromName(type, name, ip_addr, port);
+    return_res = _type_util.getClientObjFromAgentName(type, name, ip_addr, port);
 cleanup_type: delete[] type;
     }
 cleanup_connector: delete connector;
@@ -113,19 +120,20 @@ cleanup_connector: delete connector;
 
   void Export(const std::string name, NetObj* netObj) {
     _mtx.lock();
-    if (!(_name_to_NetObj.find(name) == _name_to_NetObj.end())) {
+    if (!(_name_to_obj.find(name) == _name_to_obj.end())) {
       _mtx.unlock();
       throw std::runtime_error(name + "already assigned");
     }
-    _name_to_NetObj[name] = netObj; // TODO need GC info here
-//    std::cout << typeid(*netObj).name() << " " << name << " inserted"
-//      << std::endl;
+    AgentObj* agentObj = _type_util.getAgentObjForServerObj(netObj, name,
+                                                            this);
+    _name_to_obj[name] = new ObjEntry(agentObj, false, 0);
+    std::cout << "put " << typeid(*agentObj).name() << " " << name << std::endl;
     _mtx.unlock();
   }
   void PrintExported() {
     _mtx.lock();
-    for (auto it = _name_to_NetObj.begin(); it != _name_to_NetObj.end(); ++it) {
-      std::cout << typeid(*(it->second)).name() << " " << it->first
+    for (auto it = _name_to_obj.begin(); it != _name_to_obj.end(); ++it) {
+      std::cout << typeid(*(it->second->agentObj)).name() << " " << it->first
         << std::endl;
     }
     _mtx.unlock();
@@ -136,7 +144,7 @@ cleanup_connector: delete connector;
   Agent& operator=(const Agent&) { return *_instance; }
 
   static void _run(std::mutex& mtx,
-      std::unordered_map<std::string, NetObj*>& name_to_NetObj,
+      std::unordered_map<std::string, ObjEntry*>& name_to_obj,
       volatile bool& should_exit, int port, std::string& ip_addr) {
     // thread holds lock here
     // thread initialization
@@ -176,13 +184,13 @@ cleanup_connector: delete connector;
           std::cout << "name " << name << std::endl;
 
           mtx.lock(); {
-          auto it = name_to_NetObj.find(name);
-          if (it == name_to_NetObj.end()) {
+          auto it = name_to_obj.find(name);
+          if (it == name_to_obj.end()) {
             uint32_t type_len = 0;
             STREAM_SEND((char*)&type_len, sizeof(type_len));
             if (sent < 0) { goto cleanup_get_type_response; }
           } else { // found NetObj for name
-            std::string type = typeid(*(it->second)).name();
+            std::string type = typeid(*(it->second->agentObj)).name();
             uint32_t type_len = htonl(type.size());
             STREAM_SEND((char*)&type_len, sizeof(type_len));
             if (sent < 0) { goto cleanup_get_type_response; }
@@ -216,11 +224,11 @@ cleanup_name: delete[] name;
           std::cout << "invoke requested for " << name << std::endl;
 
           mtx.lock();
-          auto it = name_to_NetObj.find(name);
+          auto it = name_to_obj.find(name);
           // TODO: check existence
           mtx.unlock();
           char* res_buf; uint32_t res_buf_size;
-          it->second->dispatch(buf+start, res_buf, res_buf_size);
+          (it->second->agentObj)->dispatch(buf+start, res_buf, res_buf_size);
           if (res_buf == nullptr) { goto cleanup_buf; }
 
           uint32_t res_buf_size_wire = htonl(res_buf_size);
@@ -248,7 +256,7 @@ err_exit:
   }
 
   static Agent* _instance;
-  std::unordered_map<std::string, NetObj*> _name_to_NetObj;
+  std::unordered_map<std::string, ObjEntry*> _name_to_obj;
   std::mutex _mtx;
   volatile bool _should_exit; // tell the detached thread to stop looping
   TypeUtil _type_util;

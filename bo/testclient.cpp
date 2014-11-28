@@ -7,8 +7,6 @@
 #include "BaseAGenerated.hpp"
 #include "BaseB.hpp"
 #include "BaseBGenerated.hpp"
-#include "NetObj.hpp"
-#include "TypeUtil.hpp"
 
 Agent* Agent::_instance = NULL;
 
