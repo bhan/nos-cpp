@@ -20,7 +20,9 @@ int main() {
   Agent::Instance()->Export("BaseA", baseA);
   Agent::Instance()->Export("BaseB", baseB);
   Agent::Instance()->PrintExported();
-//  Agent::Instance()->Exit();
+  delete baseA;
+  delete baseB;
   while (1) {
   }
+  Agent::Instance()->Exit();
 }

@@ -1,5 +1,6 @@
 #include <arpa/inet.h>
 #include <cassert>
+#include <ctime>
 #include <iostream>
 #include <mutex>
 #include <functional>
@@ -49,9 +50,13 @@ class ObjEntry {
  public:
   AgentObj* agentObj;
   bool server_deleted; // delete has been called on corresponding server obj
-  time_t renewed;
-  ObjEntry(AgentObj* obj_, bool server_deleted_, time_t renewed_)
-    : agentObj(obj_), server_deleted(server_deleted_), renewed(renewed_) {}
+  time_t renewed_time;
+  ObjEntry(AgentObj* obj_, bool server_deleted_, time_t renewed_time_)
+    : agentObj(obj_), server_deleted(server_deleted_),
+      renewed_time(renewed_time_) {}
+  ~ObjEntry() {
+    delete agentObj;
+  }
 };
 
 void _run(std::mutex& mtx,
@@ -66,7 +71,26 @@ void _run(std::mutex& mtx,
   std::cout << "Agent started at " << ip_addr << ":" << port << std::endl;
 
   ssize_t sent_ttl; ssize_t sent; ssize_t recvd; ssize_t recvd_ttl;
+  uint iteration = 0;
   while (!should_exit) {
+    ++iteration;
+    if (iteration % 2 == 0) {
+      std::cout << "garbage collection initiated" << std::endl;
+      time_t cur_time = time(NULL);
+      for (auto it = name_to_obj.begin(); it != name_to_obj.end(); ) {
+        std::cout << it->first << " deleted by server? " << it->second->server_deleted << std::endl;
+        if (it->second->server_deleted) {
+          double diff_time = difftime(cur_time, it->second->renewed_time);
+          std::cout << "difftime: " << diff_time << std::endl;
+          if (diff_time > 10.0) {
+            name_to_obj.erase(it++);
+            std::cout << "deleted " << it->first << " and its entry" << std::endl;
+            continue;
+          }
+        }
+        ++it;
+      }
+    }
     mtx.unlock();
     TCPStream* stream = acceptor->accept();
     if (stream == NULL) { goto err_exit; }
@@ -99,6 +123,7 @@ void _run(std::mutex& mtx,
           STREAM_SEND((char*)&type_len, sizeof(type_len));
           if (sent < 0) { goto cleanup_get_type_response; }
         } else { // found NetObj for name
+          it->second->renewed_time = time(NULL); // GC
           std::string type = typeid(*(it->second->agentObj)).name();
           uint32_t type_len = htonl(type.size());
           STREAM_SEND((char*)&type_len, sizeof(type_len));
@@ -109,7 +134,6 @@ void _run(std::mutex& mtx,
           std::cout << "sent " << name << " of type " << type << std::endl;
         }
         }
-
 cleanup_get_type_response: mtx.unlock();
 cleanup_name: delete[] name;
         break;
@@ -134,6 +158,7 @@ cleanup_name: delete[] name;
 
         mtx.lock();
         auto it = name_to_obj.find(name);
+        it->second->renewed_time = time(NULL); // GC
         // TODO: check existence
         mtx.unlock();
         char* res_buf; uint32_t res_buf_size;
@@ -225,7 +250,7 @@ void Agent::Export(const std::string name, NetObj* netObj) {
     throw std::runtime_error(name + "already assigned");
   }
   AgentObj* agentObj = _type_util.getAgentObjForServerObj(netObj, name, this);
-  _name_to_obj[name] = new ObjEntry(agentObj, false, 0);
+  _name_to_obj[name] = new ObjEntry(agentObj, false, time(NULL));
 //    std::cout << "put " << typeid(*agentObj).name() << " " << name << std::endl;
   _mtx.unlock();
 }

@@ -71,7 +71,7 @@ class BaseBAgent : public AgentObj {
     baseBServer->_agent = agent;
   }
   void dispatch(char* buf, char*& res_buf, uint32_t& res_buf_size) {
-    std::cout << "BaseAServer dispatch() called" << std::endl;
+    std::cout << "BaseBServer dispatch() called" << std::endl;
 
     int32_t method_code;
     size_t start = Serialize::unpack(buf, 0, method_code);
