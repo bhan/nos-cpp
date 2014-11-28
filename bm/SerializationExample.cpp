@@ -40,26 +40,35 @@
 */
 
 
-void func(int a, const std::vector<int8_t> &b, double c, std::string &d) {
+double func(int a, const std::vector<int8_t> &b, double c, std::string &d) {
     std::cout << "Inside static function: "
               << a << " "
               << c << " "
               << d << std::endl;
     for (const auto &i : b) std::cout << int32_t(i) << std::endl;
+    return 2.71;
 }
 
 
 struct Bar {
-    void bar_method(int a, const std::vector<int8_t> &b, double c, std::string &d) {
+    double bar_method(int a, const std::vector<int8_t> &b, double c, std::string &d) {
         std::cout << "Inside non-static function: "
                   << a << " "
                   << c << " "
                   << d << std::endl;
         for (const auto &i : b) std::cout << int32_t(i) << std::endl;
+        return 3.14159265;
+    }
+
+    std::vector<std::string> baz_method(int a, const std::vector<int8_t> &b, double c, std::string &d) {
+        std::cout << "Inside non-static function: "
+                  << a << ", "
+                  << c << ", "
+                  << d << std::endl;
+        for (const auto &i : b) std::cout << int32_t(i) << "," << std::endl;
+        return std::vector<std::string> { "here", "is", "a", "sample", "vector", "of", "strings", };
     }
 };
-
-int f(int a, int b) { return a + b; }
 
 int main(int argc, char** argv) {
     std::string packet;
@@ -78,15 +87,24 @@ int main(int argc, char** argv) {
 
         // To apply tuple as arguments to static function
         std::cout << "Applying tuple to static function...\n";
-        TupleFunctional::apply_fn(func, the_tuple);
+        double result = TupleFunctional::apply_fn(func, the_tuple);
+        std::cout << "result is " << result << "\n\n";
 
         // To apply tuple as arguments to non-static member functions (object methods)
         std::cout << "Applying tuple to non-static member function converted to static function by std::mem_fn...\n";
         auto mem_fn_tuple = std::tuple_cat( std::tuple<Bar*> { bar }, the_tuple );
-        TupleFunctional::apply_fn(std::mem_fn(&Bar::bar_method), mem_fn_tuple);
+        result = TupleFunctional::apply_fn(std::mem_fn(&Bar::bar_method), mem_fn_tuple);
+        std::cout << "result is " << result << "\n\n";
 
         // The cleaner alternative
         std::cout << "Applying tuple to non-static member function using TupleFunctional::apply_nonstatic_fn()...\n";
-        TupleFunctional::apply_nonstatic_fn(&Bar::bar_method, bar, the_tuple);
+        double result2 = TupleFunctional::apply_nonstatic_fn(&Bar::bar_method, bar, the_tuple);
+        std::cout << "result2 is " << result2 << "\n\n";
+
+        // The cleaner alternative
+        std::cout << "Applying tuple to non-static member function that returns vector<string> using TupleFunctional::apply_nonstatic_fn()...\n";
+        auto result3 = TupleFunctional::apply_nonstatic_fn(&Bar::baz_method, bar, the_tuple);
+        std::cout << "\nresult3 is:\n";
+        for (const auto &i : result3) std::cout << i << "\n";
     }
 }
