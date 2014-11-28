@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "Agent.hpp"
 #include "BaseB.hpp"
 #include "NetObj.hpp"
 #include "Codes.hpp"
@@ -42,13 +43,13 @@
   } \
  )
 
-class Agent; // forward declare Agent in Agent.hpp
-
 class BaseBServer : public BaseB {
   friend class BaseBAgent;
  public:
   BaseBServer(int32_t num) : _base(new BaseB(num)) {}
-  ~BaseBServer() {}
+  ~BaseBServer() {
+    _agent->mark_obj_deleted(_name);
+  }
   int32_t decrement(int32_t a) {
     return _base->decrement(a);
   }

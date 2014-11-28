@@ -7,23 +7,23 @@ TCP_CLASSES=../tcpsockets/tcpacceptor.cpp ../tcpsockets/tcpconnector.cpp ../tcps
 
 all: testserver testclient
 
-agent:
-	$(CPP) $(ARGS) Agent.hpp
+agent: Agent.hpp
+	$(CPP) $(ARGS) -c Agent.cpp
 
 classes:
-	$(CPP) $(ARGS) BaseA.hpp BaseAGenerated.hpp BaseB.hpp BaseBGenerated.hpp
+	$(CPP) $(ARGS) -c BaseAGenerated.hpp BaseBGenerated.hpp
 
 serialize:
-	$(CPP) $(ARGS) Serialize.hpp
+	$(CPP) $(ARGS) -c Serialize.hpp
 
-testserver: agent classes utils
-	$(CPP) $(ARGS) -o testserver.out $(TCP_CLASSES) testserver.cpp $(LD)
+testserver: agent utils
+	$(CPP) $(ARGS) -o testserver.out $(TCP_CLASSES) Agent.o TypeUtil.o testserver.cpp $(LD)
 
-testclient: agent classes utils
-	$(CPP) $(ARGS) -o testclient.out $(TCP_CLASSES) testclient.cpp $(LD)
+testclient: agent utils
+	$(CPP) $(ARGS) -o testclient.out $(TCP_CLASSES) Agent.o TypeUtil.o testclient.cpp $(LD)
 
-utils:
-	$(CPP) $(ARGS) TypeUtil.hpp
+utils: classes
+	$(CPP) $(ARGS) -c TypeUtil.cpp
 
 clean:
-	rm test*.out *.gch
+	rm test*.out *.gch *.o

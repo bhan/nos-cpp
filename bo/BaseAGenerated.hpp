@@ -4,15 +4,17 @@
 
 #include <iostream>
 #include <string>
+#include "Agent.hpp"
 #include "BaseA.hpp"
 #include "NetObj.hpp"
-
-class Agent;
 
 class BaseAServer : public BaseA { // used by the server
   friend class BaseAAgent;
   public:
     BaseAServer() : _base(new BaseA()) {}
+    ~BaseAServer() {
+      _agent->mark_obj_deleted(_name);
+    }
     int32_t decrement() {
       std::cout << "BaseAServer increment() called" << std::endl;
       return _base->increment();
@@ -20,10 +22,6 @@ class BaseAServer : public BaseA { // used by the server
     int32_t increment() {
       std::cout << "BaseAServer increment() called" << std::endl;
       return _base->increment();
-    }
-    char* dispatch(char* buf) {
-      std::cout << "BaseAServer dispatch() called" << std::endl;
-      return nullptr;
     }
  private:
   BaseA* _base;
@@ -40,6 +38,7 @@ class BaseAAgent: public BaseA, public AgentObj {
     baseAServer->_agent = agent;
   }
   void dispatch(char* buf, char*& res_buf, uint32_t& res_buf_size) {
+    std::cout << "BaseAServer dispatch() called" << std::endl;
   }
  private:
   BaseA* _base;
