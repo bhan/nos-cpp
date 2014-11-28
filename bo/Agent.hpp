@@ -127,7 +127,7 @@ cleanup_connector: delete connector;
     AgentObj* agentObj = _type_util.getAgentObjForServerObj(netObj, name,
                                                             this);
     _name_to_obj[name] = new ObjEntry(agentObj, false, 0);
-    std::cout << "put " << typeid(*agentObj).name() << " " << name << std::endl;
+//    std::cout << "put " << typeid(*agentObj).name() << " " << name << std::endl;
     _mtx.unlock();
   }
   void PrintExported() {
@@ -166,7 +166,7 @@ cleanup_connector: delete connector;
       STREAM_RECV(&message_type, sizeof(message_type));
       if (recvd < 0) { goto cleanup_stream; }
 
-      std::cout << "message_type " << (int)message_type << std::endl;
+//      std::cout << "message_type " << (int)message_type << std::endl;
       switch (static_cast<MessageCode>(message_type)) {
         case MessageCode::get_type: {
           std::cout << "get_type" << std::endl;
@@ -175,13 +175,13 @@ cleanup_connector: delete connector;
           STREAM_RECV((char*)&name_len, sizeof(name_len));
           if (recvd < 0) { goto cleanup_stream; }
           name_len = ntohl(name_len);
-          std::cout << "name_len " << name_len << std::endl;
+//          std::cout << "name_len " << name_len << std::endl;
 
           char* name = new char[name_len+1];
           STREAM_RECV(name, name_len);
           if (recvd < 0) { goto cleanup_name; }
           name[name_len] = '\0';
-          std::cout << "name " << name << std::endl;
+//          std::cout << "name " << name << std::endl;
 
           mtx.lock(); {
           auto it = name_to_obj.find(name);
