@@ -7,7 +7,6 @@
 #include <cereal/types/tuple.hpp>
 #include <cereal/types/set.hpp>
 #include <cereal/types/map.hpp>
-
 #include <sstream>
 
 namespace Serializer {

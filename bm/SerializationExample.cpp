@@ -1,3 +1,5 @@
+#include <utility>
+#include "TupleFunctional.hpp"
 #include "Serializer.hpp"
 
 /*
@@ -25,24 +27,40 @@
     and the following server code:
 
         // lookup object
-        Foo *obj = lookup_table(request.ObjectID)
+        Foo *obj = lookup_object(request.ObjectID);
 
-        // de-serialize args
+        // lookup address to member function (i.e. &Bar::bar_method)
+        auto func = lookup_method(request.methodID);
+
+        // de-serialize args to method call
         auto args = Serializer::unpack<std::tuple<int, double, std::string>>(request.Arguments);
 
-        // bind the args to the method of the object
-        std::bind(&Foo::bar_method, obj, args);
+        // Apply args tuple to function
+        TupleFunctional::apply_nonstatic_fn(func, obj, the_tuple);
 */
 
+
+void func(int a, const std::vector<int8_t> &b, double c, std::string &d) {
+    std::cout << "Inside static function: "
+              << a << " "
+              << c << " "
+              << d << std::endl;
+    for (const auto &i : b) std::cout << int32_t(i) << std::endl;
+}
+
+
 struct Bar {
-    void func(int a, const std::vector<int8_t> &b, double c, std::string &d) {
-        std::cout << "Inside function: "
+    void bar_method(int a, const std::vector<int8_t> &b, double c, std::string &d) {
+        std::cout << "Inside non-static function: "
                   << a << " "
                   << c << " "
                   << d << std::endl;
         for (const auto &i : b) std::cout << int32_t(i) << std::endl;
     }
 };
+
+int f(int a, int b) { return a + b; }
+
 int main(int argc, char** argv) {
     std::string packet;
     {
@@ -57,7 +75,15 @@ int main(int argc, char** argv) {
     {
         Bar *bar = new Bar();
         auto the_tuple = Serializer::unpack<std::tuple<int, std::vector<int8_t>, double, std::string>>(packet);
-        // func( std::get<0>(the_tuple), std::get<1>(the_tuple), std::get<2>(the_tuple), std::get<3>(the_tuple) );
-        std::bind(&Bar::func, bar, the_tuple);
+
+        // To apply tuple as arguments to static function
+        TupleFunctional::apply_fn(func, the_tuple);
+
+        // To apply tuple as arguments to non-static member functions (object methods)
+        auto mem_fn_tuple = std::tuple_cat( std::tuple<Bar*> { bar }, the_tuple );
+        TupleFunctional::apply_fn(std::mem_fn(&Bar::bar_method), mem_fn_tuple);
+
+        // The cleaner alternative
+        TupleFunctional::apply_nonstatic_fn(&Bar::bar_method, bar, the_tuple);
     }
 }
