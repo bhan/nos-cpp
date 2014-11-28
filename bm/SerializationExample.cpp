@@ -77,13 +77,16 @@ int main(int argc, char** argv) {
         auto the_tuple = Serializer::unpack<std::tuple<int, std::vector<int8_t>, double, std::string>>(packet);
 
         // To apply tuple as arguments to static function
+        std::cout << "Applying tuple to static function...\n";
         TupleFunctional::apply_fn(func, the_tuple);
 
         // To apply tuple as arguments to non-static member functions (object methods)
+        std::cout << "Applying tuple to non-static member function converted to static function by std::mem_fn...\n";
         auto mem_fn_tuple = std::tuple_cat( std::tuple<Bar*> { bar }, the_tuple );
         TupleFunctional::apply_fn(std::mem_fn(&Bar::bar_method), mem_fn_tuple);
 
         // The cleaner alternative
+        std::cout << "Applying tuple to non-static member function using TupleFunctional::apply_nonstatic_fn()...\n";
         TupleFunctional::apply_nonstatic_fn(&Bar::bar_method, bar, the_tuple);
     }
 }
