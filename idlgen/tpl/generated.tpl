@@ -6,7 +6,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "{{CLASS_HEADER}}"
+#include "{{CLASS_NAME}}.hpp"
 #include "ClientObj.hpp"
 #include "Codes.hpp"
 #include "Serialize.hpp"
@@ -44,7 +44,9 @@
 
 class {{CLASS_NAME}}Server : public {{CLASS_NAME}} {
  public:
+  {{#CTORS}}
   {{CLASS_NAME}}Server({{CTOR_ARGS_WITH_TYPES}}) : _base(new {{CLASS_NAME}}({{CTOR_ARGS}})) {}
+  {{/CTORS}}
   {{#METHOD_IMPLS}}
   {{METHOD_RET_TYPE}} {{METHOD_NAME}}({{METHOD_ARGS_WITH_TYPES}}) {
     return _base->{{METHOD_NAME}}({{METHOD_ARGS}});
@@ -56,7 +58,7 @@ class {{CLASS_NAME}}Server : public {{CLASS_NAME}} {
     int32_t method_code;
     size_t start = Serialize::unpack(buf, 0, method_code);
     switch (static_cast<{{CLASS_NAME}}MethodCode>(method_code)) {
-      {{#METHOD_DISPATCHES}}
+      {{#METHOD_IMPLS}}
       case {{CLASS_NAME}}MethodCode::{{METHOD_NAME}}: {
         std::cout << "dispatch: {{METHOD_NAME}}" << std::endl;
         int32_t a;
@@ -67,7 +69,7 @@ class {{CLASS_NAME}}Server : public {{CLASS_NAME}} {
         start = Serialize::pack(res_buf, 0, res);
         break;
       }
-      {{/METHOD_DISPATCHES}}
+      {{/METHOD_IMPLS}}
       default: {
         std::cout << "dispatch: unsupported" << std::endl;
         break;
@@ -85,7 +87,7 @@ class {{CLASS_NAME}}Client : public {{CLASS_NAME}}, public ClientObj {
     ClientObj::ip_addr = ip_addr;
     ClientObj::port = port;
   }
-  {{#METHOD_IMPLS_CLIENT}}
+  {{#METHOD_IMPLS}}
   {{METHOD_RET_TYPE}} {{METHOD_NAME}}({{METHOD_ARGS_WITH_TYPES}}) {
     int32_t return_res; bool error = false;
     size_t start = 0;
@@ -128,7 +130,7 @@ cleanup_recv_buf: delete[] recv_buf;
 cleanup_buf: delete[] buf;
     return error ? throw std::runtime_error("network error") : return_res;
   }
-  {{/METHOD_IMPLS_CLIENT}}
+  {{/METHOD_IMPLS}}
  private:
   TCPConnector* connector = new TCPConnector();
 };
