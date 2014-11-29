@@ -5,7 +5,7 @@
 #include "ClassRep.hpp"
 #include "FunctionRep.hpp"
 
-enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClientData parserState) {
+static enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClientData parserState) {
     auto classRep = static_cast<ClassRep*>(parserState);
 
     auto access = clang_getCXXAccessSpecifier(cursor);
@@ -29,8 +29,8 @@ enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClientData 
         }
         clang_disposeString(retTypeCXStr);
 
-        int numArgs = clang_Cursor_getNumArguments(cursor);
-        for (int i = 0; i < numArgs; i++) {
+        auto numArgs = clang_Cursor_getNumArguments(cursor);
+        for (decltype(numArgs) i = 0; i < numArgs; i++) {
             CXCursor argCursor = clang_Cursor_getArgument(cursor, i);
 
             // ret type
@@ -56,7 +56,7 @@ enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClientData 
     return CXChildVisit_Continue;
 }
 
-enum CXChildVisitResult classPrinter(CXCursor cursor, CXCursor, CXClientData data) {
+static enum CXChildVisitResult classPrinter(CXCursor cursor, CXCursor, CXClientData data) {
     auto classes = static_cast<std::vector<ClassRep*>* >(data);
     if (cursor.kind == CXCursorKind::CXCursor_ClassDecl) {
         auto str = clang_getCursorDisplayName(cursor);
@@ -71,11 +71,11 @@ enum CXChildVisitResult classPrinter(CXCursor cursor, CXCursor, CXClientData dat
     return CXChildVisit_Continue;
 }
 
-bool checkForOutputErrors(CXTranslationUnit tu) {
+static bool checkForOutputErrors(CXTranslationUnit tu) {
     bool fatalError = false;
 
     auto numDiagnostics = clang_getNumDiagnostics(tu);
-    for (unsigned int diagIdx = 0; diagIdx < numDiagnostics; diagIdx++) {
+    for (decltype(numDiagnostics) diagIdx = 0; diagIdx < numDiagnostics; diagIdx++) {
         CXDiagnostic diag = clang_getDiagnostic(tu, diagIdx);
 
         auto diagCategoryStr = clang_getDiagnosticCategoryText(diag);
@@ -93,7 +93,7 @@ bool checkForOutputErrors(CXTranslationUnit tu) {
     return fatalError;
 }
 
-void usage(const char* executable_name) {
+static void usage(const char* executable_name) {
     std::cout << "Usage: "  << executable_name << " <source_file> [<source_file> ...]" << std::endl;
 }
 
