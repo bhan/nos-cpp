@@ -59,7 +59,7 @@ enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClientData 
 enum CXChildVisitResult classPrinter(CXCursor cursor, CXCursor, CXClientData data) {
     auto classes = static_cast<std::vector<ClassRep*>* >(data);
     if (cursor.kind == CXCursorKind::CXCursor_ClassDecl) {
-        CXString str = clang_getCursorDisplayName(cursor);
+        auto str = clang_getCursorDisplayName(cursor);
         std::unique_ptr<ClassRep> classRep(new ClassRep(clang_getCString(str)));
         clang_disposeString(str);
 
@@ -74,14 +74,14 @@ enum CXChildVisitResult classPrinter(CXCursor cursor, CXCursor, CXClientData dat
 bool checkForOutputErrors(CXTranslationUnit tu) {
     bool fatalError = false;
 
-    unsigned int numDiagnostics = clang_getNumDiagnostics(tu);
+    auto numDiagnostics = clang_getNumDiagnostics(tu);
     for (unsigned int diagIdx = 0; diagIdx < numDiagnostics; diagIdx++) {
         CXDiagnostic diag = clang_getDiagnostic(tu, diagIdx);
 
-        CXString diagCategoryStr = clang_getDiagnosticCategoryText(diag);
-        CXString diagText = clang_getDiagnosticSpelling(diag);
+        auto diagCategoryStr = clang_getDiagnosticCategoryText(diag);
+        auto diagText = clang_getDiagnosticSpelling(diag);
 
-        CXDiagnosticSeverity diagSeverity = clang_getDiagnosticSeverity(diag);
+        auto diagSeverity = clang_getDiagnosticSeverity(diag);
         if (diagSeverity >= CXDiagnostic_Fatal) {
             fatalError = true;
         }
@@ -103,15 +103,15 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    CXIndex index = clang_createIndex(0, 0);
-    CXTranslationUnit transUnit = clang_parseTranslationUnit(index, 0, argv, argc, 0, 0, CXTranslationUnit_None);
+    auto index = clang_createIndex(0, 0);
+    auto transUnit = clang_parseTranslationUnit(index, 0, argv, argc, 0, 0, CXTranslationUnit_None);
 
     if (checkForOutputErrors(transUnit)) {
         std::cerr << "WARNING: Compilation unit has errors. Please fix them!" << std::endl;
     }
 
     std::unique_ptr<std::vector<ClassRep*> > classes(new std::vector<ClassRep*>());
-    CXCursor cursor = clang_getTranslationUnitCursor(transUnit);
+    auto cursor = clang_getTranslationUnitCursor(transUnit);
     clang_visitChildren(cursor, classPrinter, classes.get());
 
     clang_disposeTranslationUnit(transUnit);
