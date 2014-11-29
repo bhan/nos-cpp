@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <clang-c/Index.h>
 #include <iostream>
 #include <string>
@@ -72,13 +73,47 @@ static enum CXChildVisitResult classPrinter(CXCursor cursor, CXCursor, CXClientD
     return CXChildVisit_Continue;
 }
 
+struct convert {
+    void operator()(char& c) {
+        c = toupper(static_cast<unsigned char>(c));
+    }
+};
+
 static void printClassTemplate(ClassRep& classRep) {
-    std::cout << classRep << std::endl;
+    ctemplate::TemplateDictionary dict("class");
+
+    dict.SetValue("CLASS_NAME", classRep.getName());
+
+    std::string classUpper(classRep.getName());
+    std::for_each(classUpper.begin(), classUpper.end(), convert());
+    dict.SetValue("CLASS_UPPERCASE", classUpper);
+
+    for (auto &funcRep : classRep.getFunctions()) {
+        if (funcRep->isConstructor()) {
+            auto ctorDict = dict.AddSectionDictionary("CTORS");
+            ctorDict->SetValue("CTOR_ARGS_WITH_TYPES", funcRep->getArgNamesWithTypes());
+            ctorDict->SetValue("CTOR_ARGS", funcRep->getArgNames());
+        } else {
+            auto funcDict = dict.AddSectionDictionary("METHOD_IMPLS");
+            funcDict->SetValue("METHOD_RET_TYPE", funcRep->getReturnType());
+            funcDict->SetValue("METHOD_NAME", funcRep->getName());
+            funcDict->SetValue("METHOD_ARGS_WITH_TYPES", funcRep->getArgNamesWithTypes());
+            funcDict->SetValue("METHOD_ARGS", funcRep->getArgNames());
+        }
+    }
+    dict.SetValue("CTOR_ARGS_WITH_TYPES", "momma");
+
+
+    std::string output;
+    ctemplate::ExpandTemplate("../idlgen/tpl/generated.tpl", ctemplate::DO_NOT_STRIP, &dict, &output);
+    std::cout << output;
 }
 
 static void printTemplates(std::vector<ClassRep*>& classes) {
     for (auto &classRep : classes) {
-        printClassTemplate(*classRep);
+        if (classRep->isNetObj()) {
+            printClassTemplate(*classRep);
+        }
     }
 }
 
