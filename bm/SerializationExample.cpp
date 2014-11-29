@@ -71,6 +71,18 @@ struct Bar {
         for (const auto &i : b) std::cout << int32_t(i) << "," << std::endl;
         return std::vector<std::string> { "here", "is", "a", "sample", "vector", "of", "strings", };
     }
+
+    std::string baw_method() {
+        std::stringstream s;
+        s << "hey, concatenating empty tuples works!  object::val is " << val;
+        return s.str();
+    }
+
+    std::string val;
+
+    Bar(const std::string &tmp) {
+        val = tmp;
+    }
 };
 
 int main(int argc, char** argv) {
@@ -89,7 +101,7 @@ int main(int argc, char** argv) {
     }
 
     {
-        Bar *bar = new Bar();
+        Bar *bar = new Bar("random init text");
         auto the_tuple = Serializer::unpack<std::tuple<int, std::vector<int8_t>, double, std::string>>(packet);
 
         // To apply tuple as arguments to static function
@@ -115,9 +127,13 @@ int main(int argc, char** argv) {
         for (const auto &i : result3) std::cout << i << "\n";
 
         // Works for empty tuples as well!
-        std::cout << "\nApplying empty tuple to function that takes no arguments and returns int...\n";
+        std::cout << "\nApplying empty tuple to function that takes no arguments and returns string...\n";
         auto empty_tuple = Serializer::unpack<std::tuple<>>(packet2);
         auto x = TupleFunctional::apply_fn(funcWithoutArgs, empty_tuple);
         std::cout << "x is: " << x << "\n";
+
+        std::cout << "\nApplying empty tuple to non-static member function that takes no arguments and returns string...\n";
+        auto y = TupleFunctional::apply_nonstatic_fn(&Bar::baw_method, bar, empty_tuple);
+        std::cout << "y is: " << y << "\n";
     }
 }
