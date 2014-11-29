@@ -2,9 +2,12 @@
 #include <iostream>
 #include <string>
 
+#include "ClassRep.hpp"
 #include "FunctionRep.hpp"
 
 enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClientData parserState) {
+    auto classRep = static_cast<ClassRep*>(parserState);
+
     auto access = clang_getCXXAccessSpecifier(cursor);
     if (access != CX_CXXAccessSpecifier::CX_CXXPublic) {
         return CXChildVisit_Continue;
@@ -13,16 +16,16 @@ enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClientData 
     if (cursor.kind == CXCursorKind::CXCursor_CXXMethod || cursor.kind == CXCursorKind::CXCursor_Constructor) {
         auto str = clang_getCursorSpelling(cursor);
         std::string funcName(clang_getCString(str));
-        FunctionRep funcRep(funcName, cursor.kind == CXCursor_Constructor);
+        std::unique_ptr<FunctionRep> funcRep(new FunctionRep(funcName, cursor.kind == CXCursor_Constructor));
         clang_disposeString(str);
 
         auto retType = clang_getCursorType(cursor);
         auto retTypeCXStr = clang_getTypeSpelling(retType);
         std::string retTypeStr(clang_getCString(retTypeCXStr));
         if (retTypeStr.find(' ') != std::string::npos) {
-            funcRep.setReturnType(retTypeStr.substr(0, retTypeStr.find(' ')));
+            funcRep->setReturnType(retTypeStr.substr(0, retTypeStr.find(' ')));
         } else {
-            funcRep.setReturnType(retTypeStr);
+            funcRep->setReturnType(retTypeStr);
         }
         clang_disposeString(retTypeCXStr);
 
@@ -41,9 +44,10 @@ enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClientData 
             std::string argName(clang_getCString(argStr));
             clang_disposeString(argStr);
 
-            funcRep.addArgmument(argTypeStr, argName);
+            funcRep->addArgmument(argTypeStr, argName);
         }
-        std::cout << (funcRep.isConstructor() ? "  Constructor: " : "  Function: ") << funcRep << std::endl;
+        
+        classRep->addFunction(funcRep.release());
     } else if (cursor.kind == CXCursorKind::CXCursor_CXXBaseSpecifier) {
         auto str = clang_getCursorDisplayName(cursor);
         std::cout << "  Base: " << clang_getCString(str) << std::endl;
@@ -52,13 +56,16 @@ enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClientData 
     return CXChildVisit_Continue;
 }
 
-enum CXChildVisitResult classPrinter(CXCursor cursor, CXCursor, CXClientData) {
+enum CXChildVisitResult classPrinter(CXCursor cursor, CXCursor, CXClientData data) {
+    auto classes = static_cast<std::vector<ClassRep*>* >(data);
     if (cursor.kind == CXCursorKind::CXCursor_ClassDecl) {
         CXString str = clang_getCursorDisplayName(cursor);
-        std::cout << "Class: " << clang_getCString(str) << std::endl;
+        std::unique_ptr<ClassRep> classRep(new ClassRep(clang_getCString(str)));
         clang_disposeString(str);
 
-        clang_visitChildren(cursor, functionPrinter, nullptr);
+        clang_visitChildren(cursor, functionPrinter, classRep.get());
+
+        classes->push_back(classRep.release());
     }
 
     return CXChildVisit_Continue;
@@ -103,11 +110,15 @@ int main(int argc, char* argv[]) {
         std::cerr << "WARNING: Compilation unit has errors. Please fix them!" << std::endl;
     }
 
+    std::unique_ptr<std::vector<ClassRep*> > classes(new std::vector<ClassRep*>());
     CXCursor cursor = clang_getTranslationUnitCursor(transUnit);
-    clang_visitChildren(cursor, classPrinter, nullptr);
+    clang_visitChildren(cursor, classPrinter, classes.get());
 
     clang_disposeTranslationUnit(transUnit);
     clang_disposeIndex(index);
 
+    for (auto &classRep : *classes.get()) {
+        std::cout << *classRep << std::endl;
+    }
     return 0;
 }
