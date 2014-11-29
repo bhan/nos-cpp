@@ -13,7 +13,9 @@ public:
 
     void addFunction(FunctionRep* funcRep);
     void addBaseClass(std::string baseClassName);
+    const std::vector<FunctionRep*> getFunctions() const;
     const std::string getName() const;
+    bool isNetObj() const;
 
 private:
     std::string name;
