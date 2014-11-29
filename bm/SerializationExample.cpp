@@ -30,7 +30,7 @@
         Foo *obj = lookup_object(request.ObjectID);
 
         // lookup address to member function (i.e. &Bar::bar_method)
-        auto func = lookup_method(request.methodID);
+        auto func = lookup_method(request.MethodID);
 
         // de-serialize args to method call
         auto args = Serializer::unpack<std::tuple<int, double, std::string>>(request.Arguments);
@@ -49,6 +49,9 @@ double func(int a, const std::vector<int8_t> &b, double c, std::string &d) {
     return 2.71;
 }
 
+std::string funcWithoutArgs() {
+    return "hey, this function works as well!";
+}
 
 struct Bar {
     double bar_method(int a, const std::vector<int8_t> &b, double c, std::string &d) {
@@ -72,6 +75,7 @@ struct Bar {
 
 int main(int argc, char** argv) {
     std::string packet;
+    std::string packet2;
     {
         // A complex template parameter like std::vector<int8_t> cannot be the last argument in the tuple, because
         // the compiler freaks out with "candidate template ignored: invalid explicitly-specified argument for template parameter 'T'"
@@ -79,6 +83,9 @@ int main(int argc, char** argv) {
         auto the_tuple = std::make_tuple(42, std::vector<int8_t>{ 1, -2, 2, -37 }, 12.3, std::string("hello"));
         packet = Serializer::pack<decltype(the_tuple)>(the_tuple);
         std::cerr << typeid(the_tuple).name() << std::endl;
+
+        auto empty_tuple = std::make_tuple();
+        packet2 = Serializer::pack<decltype(empty_tuple)>(empty_tuple);
     }
 
     {
@@ -106,5 +113,11 @@ int main(int argc, char** argv) {
         auto result3 = TupleFunctional::apply_nonstatic_fn(&Bar::baz_method, bar, the_tuple);
         std::cout << "\nresult3 is:\n";
         for (const auto &i : result3) std::cout << i << "\n";
+
+        // Works for empty tuples as well!
+        std::cout << "\nApplying empty tuple to function that takes no arguments and returns int...\n";
+        auto empty_tuple = Serializer::unpack<std::tuple<>>(packet2);
+        auto x = TupleFunctional::apply_fn(funcWithoutArgs, empty_tuple);
+        std::cout << "x is: " << x << "\n";
     }
 }
