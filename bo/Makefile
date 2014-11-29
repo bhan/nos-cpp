@@ -7,8 +7,11 @@ TCP_CLASSES=../tcpsockets/tcpacceptor.cpp ../tcpsockets/tcpconnector.cpp ../tcps
 
 all: testserver testclient
 
-agent: Agent.hpp
+agent: noscommon
 	$(CPP) $(ARGS) -c Agent.cpp
+
+noscommon:
+	$(CPP) $(ARGS) -c RPCRequest.cpp NOSCommon.cpp
 
 classes:
 	$(CPP) $(ARGS) -c BaseAGenerated.hpp BaseBGenerated.hpp

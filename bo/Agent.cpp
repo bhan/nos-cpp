@@ -13,9 +13,6 @@
 #include "Codes.hpp"
 #include "Serialize.hpp"
 #include "TypeUtil.hpp"
-#include "../tcpsockets/tcpacceptor.h"
-#include "../tcpsockets/tcpconnector.h"
-#include "../tcpsockets/tcpstream.h"
 
 #define STREAM_SEND(BUF, SIZE) \
  ( \
@@ -270,4 +267,15 @@ void Agent::mark_obj_deleted(std::string name) {
     std::cout << name << " marked as deleted by server" << std::endl;
   }
   _mtx.unlock();
+}
+
+RPCRequest Agent::rpc_receive(TCPStream* stream) {
+  std::string buffer;
+  receive_packet(stream, buffer);
+
+  RPCRequest request = RPCRequest::load_packet(buffer);
+  if (_debugMode) {
+      std::cerr << "Request:" << request.to_str() << "\n";
+  }
+  return request;
 }
