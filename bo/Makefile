@@ -8,16 +8,16 @@ TCP_CLASSES=../tcpsockets/tcpacceptor.cpp ../tcpsockets/tcpconnector.cpp ../tcps
 all: testserver testclient
 
 agent: noscommon
-	$(CPP) $(ARGS) -c Agent.cpp
+	$(CPP) $(ARGS) -I.. -c Agent.cpp
 
 noscommon:
-	$(CPP) $(ARGS) -c RPCRequest.cpp NOSCommon.cpp
+	$(CPP) $(ARGS) -I.. -c RPCRequest.cpp NOSCommon.cpp
 
 classes:
-	$(CPP) $(ARGS) -c BaseAGenerated.hpp BaseBGenerated.hpp
+	$(CPP) $(ARGS) -I.. -c BaseAGenerated.hpp BaseBGenerated.hpp
 
 serialize:
-	$(CPP) $(ARGS) -c Serialize.hpp
+	$(CPP) $(ARGS) -I.. -c Serialize.hpp
 
 testserver: agent utils
 	$(CPP) $(ARGS) -o testserver.out $(TCP_CLASSES) Agent.o TypeUtil.o testserver.cpp $(LD)
