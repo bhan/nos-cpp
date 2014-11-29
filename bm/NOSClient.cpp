@@ -29,7 +29,7 @@ bool NOSClient::send(const std::string &buffer, std::string &responseBuffer) {
 
 RPCResponse NOSClient::rpc_send(const RPCRequest &request) {
     if (_debugMode) {
-        std::cerr << "Request:" << request.to_str() << "\n";
+        std::cerr << "Request:" << request.debug_str() << "\n";
     }
 
     std::string responseBuffer;
@@ -39,7 +39,7 @@ RPCResponse NOSClient::rpc_send(const RPCRequest &request) {
 
     RPCResponse response = RPCResponse::load_packet(responseBuffer);
     if (_debugMode) {
-        std::cerr << "Response:" << response.to_str() << "\n";
+        std::cerr << "Response:" << response.debug_str() << "\n";
     }
 
     return response;

@@ -3,7 +3,7 @@
 #include <sstream>
 #include "RPCResponse.hpp"
 
-std::string RPCResponse::to_str() const {
+std::string RPCResponse::debug_str() const {
     std::stringstream ss;
     ss << "\n{\n    Code: " << Code << ",\n    Body: <<" << Body << ">>,\n}\n";
     return ss.str();

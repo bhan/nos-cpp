@@ -8,6 +8,6 @@ struct RPCResponse {
 
 public:
     std::string packet() const;
-    std::string to_str() const;
+    std::string debug_str() const;
     static RPCResponse load_packet(const std::string &packet);
 };

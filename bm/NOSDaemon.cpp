@@ -45,7 +45,7 @@ RPCRequest NOSDaemon::rpc_receive(TCPStream* stream) {
 
     RPCRequest request = RPCRequest::load_packet(buffer);
     if (_debugMode) {
-        std::cerr << "Request:" << request.to_str() << "\n";
+        std::cerr << "Request:" << request.debug_str() << "\n";
     }
     return request;
 }
