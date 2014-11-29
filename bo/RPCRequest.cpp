@@ -13,18 +13,18 @@ std::string RPCRequest::to_str() const {
 std::string RPCRequest::packet() const {
     std::stringstream ss;
     cereal::PortableBinaryOutputArchive archive(ss);
-    archive(UUID, Type, ClassID, ObjectID, Body);
+    archive(UUID, Type, ClassID, ObjectID, MethodID, Body);
     return ss.str();
 }
 
 RPCRequest RPCRequest::load_packet(const std::string &packet) {
-    uint32_t _UUID, _ClassID, _ObjectID;
+    uint32_t _UUID, Type, MethodID;
     RequestType _Type;
-    std::string _Body;
+    std::string _ClassID, _ObjectID, _Body;
 
     std::stringstream ss; ss.str(packet);
     cereal::PortableBinaryInputArchive extract(ss);
-    extract(_UUID, _Type, _ClassID, _ObjectID, _Body);
+    extract(_UUID, _Type, _ClassID, _ObjectID, _MethodID, _Body);
 
     RPCRequest request;
     request.UUID = _UUID;

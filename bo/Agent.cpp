@@ -197,24 +197,29 @@ void Agent::Exit() { // assumes Initialize was called, don't call more than once
   _mtx.unlock();
 }
 ClientObj* Agent::Import(std::string name, int port, std::string ip_addr) {
-  char message_type; uint32_t name_len;
-  ssize_t sent_ttl; ssize_t sent; ssize_t recvd; ssize_t recvd_ttl;
-  ClientObj* return_res = NULL;
+//  int32_t message_type; uint32_t name_len;
+//  ssize_t sent_ttl; ssize_t sent; ssize_t recvd; ssize_t recvd_ttl;
 
-  TCPConnector* connector = new TCPConnector();
-  TCPStream* stream = connector->connect(ip_addr.c_str(), port);
-  if (stream == NULL) { goto cleanup_connector; }
+//  TCPConnector* connector = new TCPConnector();
+//  TCPStream* stream = connector->connect(ip_addr.c_str(), port);
+//  if (stream == NULL) { goto cleanup_connector; }
 
-  message_type = static_cast<char>(MessageCode::get_type); // char, so no endian worry
-  STREAM_SEND((const char*)&message_type, sizeof(message_type));
-  if (sent < 0) { goto cleanup_connector; }
+//  message_type = static_cast<char>(MessageCode::get_type); // char, so no endian worry
+//  STREAM_SEND((const char*)&message_type, sizeof(message_type));
+//  if (sent < 0) { goto cleanup_connector; }
 
-  name_len = htonl(name.size());
-  STREAM_SEND((const char*)&name_len, sizeof(name_len));
-  if (sent < 0) { goto cleanup_connector; }
+//  name_len = htonl(name.size());
+//  STREAM_SEND((const char*)&name_len, sizeof(name_len));
+//  if (sent < 0) { goto cleanup_connector; }
 
-  STREAM_SEND(name.c_str(), name.size());
-  if (sent < 0) { goto cleanup_connector; }
+//  STREAM_SEND(name.c_str(), name.size());
+//  if (sent < 0) { goto cleanup_connector; }
+
+  NOSClient *client = new NOSClient(ip_addr, port);
+  RPCRequest request;
+  request.Type = static_cast<uint32_t>(MessageCode::get_type);
+  request.ObjectID = name;
+  RPCResponse response = client->rpc_send(request);
 
   uint32_t type_len;
   STREAM_RECV((char*)&type_len, sizeof(type_len));
@@ -237,6 +242,7 @@ ClientObj* Agent::Import(std::string name, int port, std::string ip_addr) {
 cleanup_type: delete[] type;
   }
 cleanup_connector: delete connector;
+
   return return_res;
 }
 
