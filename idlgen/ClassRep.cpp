@@ -14,6 +14,10 @@ void ClassRep::addFunction(FunctionRep* funcRep) {
     functions.push_back(funcRep);
 }
 
+void ClassRep::addBaseClass(std::string baseClassName) {
+    baseClasses.push_back(baseClassName);
+}
+
 const std::string ClassRep::getName() const {
     return name;
 }
@@ -22,6 +26,10 @@ std::ostream& operator<<(std::ostream& os, const ClassRep& classRep) {
     os << "Class{" << classRep.getName() << ",functions={";
     for (auto &element : classRep.functions) {
         os << *element << ',';
+    }
+    os << "},{baseClasses=";
+    for (auto &element : classRep.baseClasses) {
+        os << element << ',';
     }
     os << '}';
     return os;

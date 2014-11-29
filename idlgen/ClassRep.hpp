@@ -12,11 +12,13 @@ public:
     ~ClassRep();
 
     void addFunction(FunctionRep* funcRep);
+    void addBaseClass(std::string baseClassName);
     const std::string getName() const;
 
 private:
     std::string name;
     std::vector<FunctionRep*> functions;
+    std::vector<std::string> baseClasses;
 
     friend std::ostream& operator<<(std::ostream& os, const ClassRep& classRep);
 };

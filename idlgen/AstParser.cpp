@@ -50,7 +50,7 @@ static enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClie
         classRep->addFunction(funcRep.release());
     } else if (cursor.kind == CXCursorKind::CXCursor_CXXBaseSpecifier) {
         auto str = clang_getCursorDisplayName(cursor);
-        std::cout << "  Base: " << clang_getCString(str) << std::endl;
+        classRep->addBaseClass(clang_getCString(str));
         clang_disposeString(str);
     }
     return CXChildVisit_Continue;
