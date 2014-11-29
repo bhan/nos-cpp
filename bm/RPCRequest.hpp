@@ -3,9 +3,9 @@
 enum RequestType { IMPORT, INVOKE, RENEW_LEASE, };
 
 struct RPCRequest {
-    uint32_t UUID, ClassID, ObjectID, MethodID;
+    uint32_t UUID, ClassID, MethodID;
     RequestType Type;
-    std::string Body;
+    std::string ObjectID, Body;
 
 public:
     std::string packet() const;

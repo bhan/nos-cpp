@@ -8,7 +8,7 @@ int main() {
         RPCRequest request;
         request.UUID = 7743;
         request.ClassID = 3333;
-        request.ObjectID = 42;
+        request.ObjectID = "the object";
         packet = request.packet();
         std::cout << request.debug_str() << "\nsize is: " << request.packet().size() << std::endl;
     }

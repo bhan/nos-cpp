@@ -18,9 +18,9 @@ std::string RPCRequest::packet() const {
 }
 
 RPCRequest RPCRequest::load_packet(const std::string &packet) {
-    uint32_t _UUID, _ClassID, _ObjectID, _MethodID;
+    uint32_t _UUID, _ClassID, _MethodID;
     RequestType _Type;
-    std::string _Body;
+    std::string _ObjectID, _Body;
 
     std::stringstream ss; ss.str(packet);
     cereal::PortableBinaryInputArchive extract(ss);
