@@ -1,6 +1,7 @@
 #include <clang-c/Index.h>
 #include <iostream>
 #include <string>
+#include <ctemplate/template.h>
 
 #include "ClassRep.hpp"
 #include "FunctionRep.hpp"
@@ -71,6 +72,16 @@ static enum CXChildVisitResult classPrinter(CXCursor cursor, CXCursor, CXClientD
     return CXChildVisit_Continue;
 }
 
+static void printClassTemplate(ClassRep& classRep) {
+    std::cout << classRep << std::endl;
+}
+
+static void printTemplates(std::vector<ClassRep*>& classes) {
+    for (auto &classRep : classes) {
+        printClassTemplate(*classRep);
+    }
+}
+
 static bool checkForOutputErrors(CXTranslationUnit tu) {
     bool fatalError = false;
 
@@ -111,14 +122,14 @@ int main(int argc, char* argv[]) {
     }
 
     std::unique_ptr<std::vector<ClassRep*> > classes(new std::vector<ClassRep*>());
+
     auto cursor = clang_getTranslationUnitCursor(transUnit);
     clang_visitChildren(cursor, classPrinter, classes.get());
 
     clang_disposeTranslationUnit(transUnit);
     clang_disposeIndex(index);
 
-    for (auto &classRep : *classes.get()) {
-        std::cout << *classRep << std::endl;
-    }
+    printTemplates(*classes.get());
+
     return 0;
 }
