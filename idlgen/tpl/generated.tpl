@@ -37,7 +37,7 @@ class {{CLASS_NAME}}Server : public {{CLASS_NAME}} {
     return _base->{{FIELD_NAME}};
   }
 
-  void set{{FIELD_NAME_CAMEL_CASE}}({{FIELD_TYPE}} value) {
+  void set{{FIELD_NAME_CAMEL_CASE}}({{FIELD_TYPE}} &value) {
     _base->{{FIELD_NAME}} = value;
   }
 {{/PUBLIC_FIELDS}}
@@ -105,11 +105,25 @@ class {{CLASS_NAME}}Client : public ClientObj {
 
 {{#PUBLIC_FIELDS}}
   {{FIELD_TYPE}} get{{FIELD_NAME_CAMEL_CASE}}() {
-    // TODO fill in code
+    auto args = std::make_tuple();
+    RPCRequest request(static_cast<uint32_t>(RequestType::invoke), _name,
+                       static_cast<uint32_t>({{CLASS_NAME}}MethodID::get{{FIELD_NAME_CAMEL_CASE}}),
+                       Serializer::pack<decltype(args)>(args));
+    RPCResponse response = _client->rpc_send(request, _address, _port);
+    if (response.Code != ServerCode::OK)
+      throw std::runtime_error("network error");
+    auto return_tuple = Serializer::unpack<std::tuple<{{FIELD_TYPE}}>>(response.Body);
+    return std::get<0>(return_tuple);
   }
 
-  void set{{FIELD_NAME_CAMEL_CASE}}({{FIELD_TYPE}} value) {
-    // TODO fill in code
+  void set{{FIELD_NAME_CAMEL_CASE}}({{FIELD_TYPE}} &value) {
+    auto args = std::tuple<{{FIELD_TYPE}}> { value };
+    RPCRequest request(static_cast<uint32_t>(RequestType::invoke), _name,
+                       static_cast<uint32_t>({{CLASS_NAME}}MethodID::set{{FIELD_NAME_CAMEL_CASE}}),
+                       Serializer::pack<decltype(args)>(args));
+    RPCResponse response = _client->rpc_send(request, _address, _port);
+    if (response.Code != ServerCode::OK)
+      throw std::runtime_error("network error");
   }
 {{/PUBLIC_FIELDS}}
 };
