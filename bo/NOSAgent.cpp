@@ -90,11 +90,9 @@ static void _run(std::mutex& mtx, NOSAgent* agent,
         if (it == name_to_obj.end()) {
           response.Code = ServerCode::OBJECT_NOT_FOUND;
         } else { // found NetObj for name
-          it->second->renewed_time = time(NULL); // GC
-          std::cout << "renewed_time " << it->second->renewed_time << " for " << request.ObjectID << std::endl;
-          response.Code = ServerCode::OK;
           std::string type = typeid(*(it->second->agentObj)).name();
           response.Body = type;
+          response.Code = ServerCode::OK;
         }
         mtx.unlock();
         break;
@@ -171,6 +169,7 @@ void NOSAgent::print_exported() {
   }
   _mtx.unlock();
 }
+
 // mark obj with name as deleted by server (precondition for GC)
 void NOSAgent::mark_obj_deleted(std::string name) {
   _mtx.lock();
