@@ -13,7 +13,6 @@
 #include "Codes.hpp"
 #include "RPCResponse.hpp"
 #include "Serializer.hpp"
-#include "TypeUtil.hpp"
 
 class ObjEntry {
  public:
@@ -31,25 +30,33 @@ class ObjEntry {
 static void _garbage_collect(std::mutex& mtx,
     std::unordered_map<std::string, ObjEntry*>& name_to_obj,
     uint expire_seconds, volatile bool& should_exit) {
+  mtx.lock();
   while (!should_exit) {
     mtx.unlock();
-    std::cout << "garbage collection initiated" << std::endl;
     time_t cur_time = time(NULL);
-    std::cout << "cur_time: " << cur_time << std::endl;
+    std::cout << "garbage collection at " << cur_time << std::endl;
+
+    mtx.lock();
     for (auto it = name_to_obj.begin(); it != name_to_obj.end(); ) {
-      std::cout << it->first << " deleted by server? " << it->second->server_deleted << std::endl;
+      std::cout << it->first << " server_deleted? " << it->second->server_deleted << std::endl;
       if (!it->second->server_deleted) {
+        ++it;
         continue;
       }
       double diff_time = difftime(cur_time, it->second->renewed_time);
       std::cout << "difftime: " << diff_time << std::endl;
       if (diff_time <= expire_seconds) {
         ++it;
+        continue;
       }
       auto erased = it->first;
-      name_to_obj.erase(it++);
+      auto old_it = it;
+      ++it;
+      name_to_obj.erase(old_it);
       std::cout << "erased " << erased << " and its entry" << std::endl;
     }
+    mtx.unlock();
+
     std::this_thread::sleep_for(std::chrono::seconds(2 * expire_seconds));
     mtx.lock();
   }
@@ -58,13 +65,13 @@ static void _garbage_collect(std::mutex& mtx,
 static void _run(std::mutex& mtx, NOSAgent* agent,
     std::unordered_map<std::string, ObjEntry*>& name_to_obj,
     volatile bool& should_exit, std::string& address, uint32_t port) {
+  mtx.lock();
   TCPAcceptor* acceptor = new TCPAcceptor(port, address.c_str());
   if (acceptor->start() != 0) {
     std::cout << "NOSAgent failed to start TCP acceptor" << std::endl;
     ::exit(1);
   }
 
-  mtx.lock();
   std::cout << "NOSAgent started at " << address << ":" << port << std::endl;
   while (!should_exit) {
     mtx.unlock();
@@ -101,10 +108,22 @@ static void _run(std::mutex& mtx, NOSAgent* agent,
           response.Code = ServerCode::OBJECT_NOT_FOUND;
           goto send_response;
         }
-        it->second->renewed_time = time(NULL); // GC
-        std::cout << "renewed_time " << it->second->renewed_time << " for " << request.ObjectID << std::endl;
-        mtx.unlock();
         (it->second->agentObj)->dispatch(request, response);
+        mtx.unlock();
+        break;
+      }
+      case RequestType::renew_lease: {
+        std::cout << "renew_lease requested for " << request.ObjectID << std::endl;
+        mtx.lock();
+        auto it = name_to_obj.find(request.ObjectID);
+        if (it == name_to_obj.end()) {
+          response.Code = ServerCode::OBJECT_NOT_FOUND;
+          goto send_response;
+        }
+        it->second->renewed_time = time(NULL);
+        std::cout << "renewed_time " << it->second->renewed_time << " for " << request.ObjectID << std::endl;
+        response.Code = ServerCode::OK;
+        mtx.unlock();
         break;
       }
       default: {
@@ -123,7 +142,6 @@ err_exit:
 void NOSAgent::initialize(std::string address, uint32_t port,
                           uint expire_seconds) { // don't call more than once
   _should_exit = false;
-  _mtx.lock();
   std::thread(_run, std::ref(_mtx), _instance, std::ref(_name_to_obj),
       std::ref(_should_exit), std::ref(address), port).detach();
   std::thread(_garbage_collect, std::ref(_mtx), std::ref(_name_to_obj),

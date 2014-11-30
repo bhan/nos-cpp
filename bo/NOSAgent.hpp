@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 #include "NetObj.hpp"
-#include "TypeUtil.hpp"
+#include "NOSAgentTypeUtil.hpp"
 #include "NOSCommon.hpp"
 #include "RPCRequest.hpp"
 #include "../tcpsockets/tcpacceptor.h"
@@ -34,6 +34,6 @@ class NOSAgent : public NOSCommon {
   std::unordered_map<std::string, ObjEntry*> _name_to_obj;
   std::mutex _mtx;
   volatile bool _should_exit; // tell the detached thread to stop looping
-  TypeUtil _type_util;
+  NOSAgentTypeUtil _type_util;
   bool _debugMode = false;
 };

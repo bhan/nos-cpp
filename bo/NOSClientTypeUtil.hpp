@@ -1,5 +1,4 @@
-#ifndef _TYPE_UTIL_HPP
-#define _TYPE_UTIL_HPP
+#pragma once
 
 #include <string>
 #include <typeinfo>
@@ -7,23 +6,16 @@
 
 #include "NetObj.hpp"
 
-class NOSAgent;
 class NOSClient;
-class TypeUtil {
+class NOSClientTypeUtil {
  public:
-  TypeUtil();
+  NOSClientTypeUtil();
   ClientObj* getClientObjFromAgentName(const std::string type_name,
                                        const std::string name,
                                        NOSClient* client,
                                        std::string address, int port) const;
-  AgentObj* getAgentObjForServerObj(NetObj* obj, std::string name,
-                                    NOSAgent* agent);
  private:
   typedef ClientObj* (* ClientConstructFunc)(std::string, NOSClient*,
                                              std::string, int);
-  typedef AgentObj* (* AgentConstructFunc)(NetObj*, std::string, NOSAgent*);
   std::unordered_map<std::string, ClientConstructFunc> _client_nameToFunc;
-  std::unordered_map<std::string, AgentConstructFunc> _agent_nameToFunc;
 };
-
-#endif /* _TYPE_UTIL_H */

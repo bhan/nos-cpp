@@ -12,6 +12,7 @@ NOSClient* NOSClient::_instance = nullptr;
 int main() {
   std::string address = "localhost"; int port = 5555;
 
+  NOSClient::Instance()->initialize(5);
   ClientObj* objA = NOSClient::Instance()->Import("BaseA", address, port);
   if (objA == NULL) {
     std::cout << "could not get remote object" << std::endl;
@@ -29,4 +30,6 @@ int main() {
 
   auto result2 = baseB->increment(5);
   std::cout << "baseB->increment(5): " << result2 << std::endl;
+
+  while (1) {}
 }

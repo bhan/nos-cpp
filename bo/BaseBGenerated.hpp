@@ -7,9 +7,9 @@
 #include <stdexcept>
 
 #include "NOSAgent.hpp"
+#include "NOSClient.hpp"
 #include "BaseB.hpp"
 #include "NetObj.hpp"
-#include "NOSClient.hpp"
 #include "Codes.hpp"
 #include "RPCRequest.hpp"
 #include "RPCResponse.hpp"
@@ -79,7 +79,9 @@ class BaseBClient : public ClientObj {
   BaseBClient(std::string name, NOSClient* client,
               std::string address, uint32_t port)
     : ClientObj(name, client, address, port) {}
-
+  ~BaseBClient() {
+    _client->mark_obj_deleted(_name);
+  }
   int32_t decrement(int32_t a) {
     auto args = std::make_tuple(a);
     RPCRequest request(static_cast<uint32_t>(RequestType::invoke), _name,

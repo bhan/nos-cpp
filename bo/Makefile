@@ -14,13 +14,13 @@ classes:
 	$(CPP) $(ARGS) -I.. -c BaseAGenerated.hpp BaseBGenerated.hpp
 
 testserver: nos utils
-	$(CPP) $(ARGS) -I.. -o testserver.out $(TCP_CLASSES) RPCResponse.o RPCRequest.o NOSCommon.o NOSAgent.o TypeUtil.o testserver.cpp $(LD)
+	$(CPP) $(ARGS) -I.. -o testserver.out $(TCP_CLASSES) RPCResponse.o RPCRequest.o NOSCommon.o NOSAgent.o NOSAgentTypeUtil.o testserver.cpp $(LD)
 
 testclient: nos utils
-	$(CPP) $(ARGS) -I.. -o testclient.out $(TCP_CLASSES) RPCResponse.o RPCRequest.o NOSCommon.o NOSClient.o TypeUtil.o testclient.cpp $(LD)
+	$(CPP) $(ARGS) -I.. -o testclient.out $(TCP_CLASSES) RPCResponse.o RPCRequest.o NOSCommon.o NOSClient.o NOSClientTypeUtil.o testclient.cpp $(LD)
 
 utils: classes
-	$(CPP) $(ARGS) -I.. -c TypeUtil.cpp
+	$(CPP) $(ARGS) -I.. -c NOSClientTypeUtil.cpp NOSAgentTypeUtil.cpp
 
 clean:
 	rm test*.out *.gch *.o
