@@ -6,30 +6,30 @@
 
 const static char* sNetObj_Class = "class NetObj";
 
-ClassRep::ClassRep(std::string name) : name(name) {
+ClassRep::ClassRep(std::string name) : name_(name) {
 }
 
 ClassRep::~ClassRep() {
 }
 
 void ClassRep::addFunction(FunctionRep* funcRep) {
-    functions.push_back(funcRep);
+    functions_.push_back(funcRep);
 }
 
 void ClassRep::addBaseClass(std::string baseClassName) {
-    baseClasses.push_back(baseClassName);
+    baseClasses_.push_back(baseClassName);
 }
 
 const std::string ClassRep::getName() const {
-    return name;
+    return name_;
 }
 
 const std::vector<FunctionRep*> ClassRep::getFunctions() const {
-    return functions;
+    return functions_;
 }
 
 bool ClassRep::isNetObj() const {
-    for (auto &element : baseClasses) {
+    for (auto &element : baseClasses_) {
         if (element == sNetObj_Class) {
             return true;
         }
@@ -39,11 +39,11 @@ bool ClassRep::isNetObj() const {
 
 std::ostream& operator<<(std::ostream& os, const ClassRep& classRep) {
     os << "Class{" << classRep.getName() << ",isNetObj=" << classRep.isNetObj() << ",functions={";
-    for (auto &element : classRep.functions) {
+    for (auto &element : classRep.functions_) {
         os << *element << ',';
     }
     os << "},{baseClasses=";
-    for (auto &element : classRep.baseClasses) {
+    for (auto &element : classRep.baseClasses_) {
         os << element << ',';
     }
     os << '}';

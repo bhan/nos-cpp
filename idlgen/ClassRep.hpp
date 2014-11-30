@@ -18,9 +18,9 @@ public:
     bool isNetObj() const;
 
 private:
-    std::string name;
-    std::vector<FunctionRep*> functions;
-    std::vector<std::string> baseClasses;
+    std::string name_;
+    std::vector<FunctionRep*> functions_;
+    std::vector<std::string> baseClasses_;
 
     friend std::ostream& operator<<(std::ostream& os, const ClassRep& classRep);
 };
