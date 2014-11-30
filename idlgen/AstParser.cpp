@@ -4,6 +4,7 @@
 #include <string>
 #include <ctemplate/template.h>
 
+#include "AstParser.hpp"
 #include "ClassRep.hpp"
 #include "FunctionRep.hpp"
 
@@ -79,7 +80,7 @@ struct convert {
     }
 };
 
-static void printClassTemplate(ClassRep& classRep) {
+void AstParser::printClassTemplate(std::ostream& os, ClassRep& classRep) {
     ctemplate::TemplateDictionary dict("class");
 
     dict.SetValue("CLASS_NAME", classRep.getName());
@@ -106,19 +107,19 @@ static void printClassTemplate(ClassRep& classRep) {
 
 
     std::string output;
-    ctemplate::ExpandTemplate("../idlgen/tpl/generated.tpl", ctemplate::DO_NOT_STRIP, &dict, &output);
-    std::cout << output;
+    ctemplate::ExpandTemplate(templateFilename_, ctemplate::DO_NOT_STRIP, &dict, &output);
+    os << output;
 }
 
-static void printTemplates(std::vector<ClassRep*>& classes) {
+void AstParser::printTemplates(std::ostream& os, std::vector<ClassRep*>& classes) {
     for (auto &classRep : classes) {
         if (classRep->isNetObj()) {
-            printClassTemplate(*classRep);
+            printClassTemplate(os, *classRep);
         }
     }
 }
 
-static bool checkForOutputErrors(CXTranslationUnit tu) {
+bool AstParser::checkForOutputErrors(std::ostream& os, CXTranslationUnit tu) {
     bool fatalError = false;
 
     auto numDiagnostics = clang_getNumDiagnostics(tu);
@@ -133,28 +134,28 @@ static bool checkForOutputErrors(CXTranslationUnit tu) {
             fatalError = true;
         }
 
-        std::cerr << clang_getCString(diagCategoryStr) << "(" << diagSeverity <<
+        os << clang_getCString(diagCategoryStr) << "(" << diagSeverity <<
                     "): " << clang_getCString(diagText) << std::endl;
     }
 
     return fatalError;
 }
 
-static void usage(const char* executable_name) {
-    std::cout << "Usage: "  << executable_name << " <source_file> [<source_file> ...]" << std::endl;
+void AstParser::setFile(std::string filename) {
+    inputFilename_ = filename;
 }
 
-int main(int argc, char* argv[]) {
-    if (argc <= 1) {
-        usage(argv[0]);
-        return 1;
-    }
+void AstParser::setTemplate(std::string filename) {
+    templateFilename_ = filename;
+}
 
+bool AstParser::generateOutput(std::ostream& output, std::ostream& error) {
     auto index = clang_createIndex(0, 0);
-    auto transUnit = clang_parseTranslationUnit(index, 0, argv, argc, 0, 0, CXTranslationUnit_None);
+    auto transUnit = clang_parseTranslationUnit(index, inputFilename_.c_str(), NULL, 0, 0, 0, CXTranslationUnit_None);
 
-    if (checkForOutputErrors(transUnit)) {
-        std::cerr << "WARNING: Compilation unit has errors. Please fix them!" << std::endl;
+    if (checkForOutputErrors(error, transUnit)) {
+        // TODO: hook up to clang in makefile so we can stop ignoring this
+        //return false;
     }
 
     std::unique_ptr<std::vector<ClassRep*> > classes(new std::vector<ClassRep*>());
@@ -165,7 +166,8 @@ int main(int argc, char* argv[]) {
     clang_disposeTranslationUnit(transUnit);
     clang_disposeIndex(index);
 
-    printTemplates(*classes.get());
+    std::cout << "printing template" << std::endl;
+    printTemplates(output, *classes.get());
 
-    return 0;
+    return true;
 }
