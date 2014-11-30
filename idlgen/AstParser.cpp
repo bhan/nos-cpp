@@ -166,7 +166,6 @@ bool AstParser::generateOutput(std::ostream& output, std::ostream& error) {
     clang_disposeTranslationUnit(transUnit);
     clang_disposeIndex(index);
 
-    std::cout << "printing template" << std::endl;
     printTemplates(output, *classes.get());
 
     return true;
