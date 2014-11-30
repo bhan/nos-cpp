@@ -19,6 +19,10 @@ class BaseB : public NetObj {
       for (int i = 0; i < a; ++i) --_num;
       return _num;
     }
+
+    std::string bar;
+    double baz;
+
   private:
     int32_t _num;
 };

@@ -32,6 +32,16 @@ class {{CLASS_NAME}}Server : public {{CLASS_NAME}} {
   }
 {{/METHOD_IMPLS}}
 
+{{#PUBLIC_FIELDS}}
+  {{FIELD_TYPE}} get{{FIELD_NAME_CAMEL_CASE}}() {
+    return _base->{{FIELD_NAME}};
+  }
+
+  void set{{FIELD_NAME_CAMEL_CASE}}({{FIELD_TYPE}} value) {
+    _base->{{FIELD_NAME}} = value;
+  }
+{{/PUBLIC_FIELDS}}
+
  private:
   {{CLASS_NAME}}* _base;
   NOSAgent* _agent;
@@ -54,7 +64,7 @@ class {{CLASS_NAME}}Agent : public AgentObj {
       case {{CLASS_NAME}}MethodID::{{METHOD_NAME}}: {
         std::cout << "dispatch: {{METHOD_NAME}}" << std::endl;
         auto args = Serializer::unpack<std::tuple<{{METHOD_ARGS_TYPES}}>>(request.Body);
-        auto result = TupleFunctions::apply_nonstatic_fn(&{{CLASS_NAME}}::{{METHOD_NAME}}, _base, args);
+        auto result = TupleFunctional::apply_nonstatic_fn(&{{CLASS_NAME}}::{{METHOD_NAME}}, _base, args);
         response.Code = ServerCode::OK;
         response.Body = Serializer::pack<decltype(result)>(result);
         break;
@@ -104,4 +114,4 @@ class {{CLASS_NAME}}Client : public ClientObj {
 {{/PUBLIC_FIELDS}}
 };
 
-#endif /* _BASE_B_GENERATED_H */
+#endif /* _{{CLASS_UPPERCASE}}_GENERATED_H */
