@@ -1,4 +1,3 @@
-// AUTO GENERATED
 #ifndef _BASE_A_GENERATED_H
 #define _BASE_A_GENERATED_H
 
@@ -16,8 +15,8 @@ class BaseAServer : public BaseA { // used by the server
       _agent->mark_obj_deleted(_name);
     }
     int32_t decrement() {
-      std::cout << "BaseAServer increment() called" << std::endl;
-      return _base->increment();
+      std::cout << "BaseAServer decrement() called" << std::endl;
+      return _base->decrement();
     }
     int32_t increment() {
       std::cout << "BaseAServer increment() called" << std::endl;
@@ -37,27 +36,23 @@ class BaseAAgent: public BaseA, public AgentObj {
     baseAServer->_name = name;
     baseAServer->_agent = agent;
   }
-  void dispatch(char* buf, char*& res_buf, uint32_t& res_buf_size) {
+  void dispatch(RPCRequest& request, RPCResponse& response) {
     std::cout << "BaseAServer dispatch() called" << std::endl;
   }
  private:
   BaseA* _base;
 };
 
-class BaseAClient : public BaseA, public ClientObj {
-  public:
-    BaseAClient(std::string name, std::string ip_addr, int port) {
-      ClientObj::name = name;
-      ClientObj::ip_addr = ip_addr;
-      ClientObj::port = port;
-    }
-    int32_t decrement() {
-      return 0;
-    }
-    int32_t increment() {
-      return 0;
-    }
-  private:
+class BaseAClient : public ClientObj {
+ public:
+  BaseAClient(std::string name, NOSClient* client,
+              std::string address, uint32_t port)
+    : ClientObj(name, client, address, port) {}
+  int32_t decrement() {
+    return 0;
+  }
+  int32_t increment() {
+    return 0;
+  }
 };
-
 #endif /* _BASE_A_GENERATED_H */

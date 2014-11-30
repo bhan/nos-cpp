@@ -13,11 +13,11 @@ public:
     return _instance;
   }
   ClientObj* Import(std::string name, std::string& address, uint32_t port);
+  RPCResponse rpc_send(const RPCRequest &request,
+                       std::string& address, uint32_t port);
 private:
   bool send(const std::string &buffer, std::string &responseBuffer,
             std::string& address, uint32_t port);
-  RPCResponse rpc_send(const RPCRequest &request,
-                       std::string& address, uint32_t port);
 
   NOSClient(uint32_t timeout, bool debugMode)
     : TCPConnector(), _timeoutSeconds(timeout), _debugMode(debugMode) {}

@@ -12,7 +12,7 @@
 #include "NOSAgent.hpp"
 #include "Codes.hpp"
 #include "RPCResponse.hpp"
-#include "Serialize.hpp"
+#include "Serializer.hpp"
 #include "TypeUtil.hpp"
 
 #define STREAM_SEND(BUF, SIZE) \
@@ -72,7 +72,7 @@ static void _run(std::mutex& mtx, NOSAgent* agent,
   uint iteration = 0;
   while (!should_exit) {
     ++iteration;
-    if (iteration % 2 == 0) {
+    if (iteration % 2 == 3) { // disabled
       std::cout << "garbage collection initiated" << std::endl;
       time_t cur_time = time(NULL);
       for (auto it = name_to_obj.begin(); it != name_to_obj.end(); ) {
@@ -91,16 +91,17 @@ static void _run(std::mutex& mtx, NOSAgent* agent,
     }
     mtx.unlock();
     RPCRequest request;
+    RPCResponse response;
     TCPStream* stream = acceptor->accept();
     if (stream == NULL) { goto err_exit; }
 
     request = agent->rpc_receive(stream);
-    switch (static_cast<MessageCode>(request.Type)) {
-      case MessageCode::get_type: {
+    std::cout << request.to_str() << std::endl;
+    switch (static_cast<RequestType>(request.Type)) {
+      case RequestType::get_type: {
         std::cout << "get_type" << std::endl;
         mtx.lock();
         auto it = name_to_obj.find(request.ObjectID);
-        RPCResponse response;
         if (it == name_to_obj.end()) {
           response.Code = ServerCode::OBJECT_NOT_FOUND;
         } else { // found NetObj for name
@@ -109,54 +110,29 @@ static void _run(std::mutex& mtx, NOSAgent* agent,
           std::string type = typeid(*(it->second->agentObj)).name();
           response.Body = type;
         }
-        agent->send_packet(stream, response.packet());
         mtx.unlock();
         break;
       }
-      case MessageCode::invoke: {
-/*        std::cout << "invoke" << std::endl;
-        uint32_t buf_size;
-        STREAM_RECV((char*)&buf_size, sizeof(buf_size));
-        if (recvd < 0) { goto cleanup_stream; }
-        buf_size = ntohl(buf_size);
-
-        std::cout << "expecting buf of size " << buf_size << std::endl;
-        char* buf = new char[buf_size];
-        STREAM_RECV(buf, buf_size);
-        if (recvd < 0) { goto cleanup_buf; }
-        std::cout << "got buf of size " << buf_size << std::endl;
-
-        {
-        std::string name;
-        size_t start = Serialize::unpack(buf, 0, name);
-        std::cout << "invoke requested for " << name << std::endl;
-
+      case RequestType::invoke: {
+        std::cout << "invoke requested for " << request.ObjectID << std::endl;
         mtx.lock();
-        auto it = name_to_obj.find(name);
-        it->second->renewed_time = time(NULL); // GC
-        // TODO: check existence
-        mtx.unlock();
-        char* res_buf; uint32_t res_buf_size;
-        (it->second->agentObj)->dispatch(buf+start, res_buf, res_buf_size);
-        if (res_buf == nullptr) { goto cleanup_buf; }
-
-        uint32_t res_buf_size_wire = htonl(res_buf_size);
-        STREAM_SEND((char*)&res_buf_size_wire, sizeof(res_buf_size_wire));
-        if (sent < 0) { goto cleanup_res_buf; }
-
-        STREAM_SEND(res_buf, res_buf_size);
-        if (sent < 0) { goto cleanup_res_buf; }
-cleanup_res_buf: delete[] res_buf;
+        auto it = name_to_obj.find(request.ObjectID);
+        if (it == name_to_obj.end()) {
+          response.Code = ServerCode::OBJECT_NOT_FOUND;
+          goto send_response;
         }
-
-cleanup_buf: delete[] buf;
-*/        break;
+        it->second->renewed_time = time(NULL); // GC
+        mtx.unlock();
+        (it->second->agentObj)->dispatch(request, response);
+        break;
       }
       default: {
-        std::cout << "no valid message type received" << std::endl;
+        std::cout << "no valid RequestType received" << std::endl;
         break;
       }
     }
+send_response:
+    agent->send_packet(stream, response.packet());
 cleanup_stream: delete stream;
 err_exit:
     mtx.lock();

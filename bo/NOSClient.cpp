@@ -37,7 +37,7 @@ RPCResponse NOSClient::rpc_send(const RPCRequest &request, std::string& address,
 
 ClientObj* NOSClient::Import(std::string name, std::string& address, uint32_t port) {
   RPCRequest request;
-  request.Type = static_cast<uint32_t>(MessageCode::get_type);
+  request.Type = static_cast<uint32_t>(RequestType::get_type);
   request.ObjectID = name;
   RPCResponse response = _instance->rpc_send(request, address, port);
 
@@ -47,5 +47,5 @@ ClientObj* NOSClient::Import(std::string name, std::string& address, uint32_t po
   }
   std::string& type = response.Body;
   std::cout << "NOSAgent::Import " << name << " of type " << type << std::endl;
-  return _type_util.getClientObjFromAgentName(type, name, address, port);
+  return _type_util.getClientObjFromAgentName(type, name, _instance, address, port);
 }

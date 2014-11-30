@@ -5,8 +5,10 @@
 
 std::string RPCRequest::to_str() const {
     std::stringstream ss;
-    ss << "\n{\n    UUID: " << UUID << ",\n    Type: " << Type << ",\n    ClassID: " << ClassID
-       << ",\n    ObjectID: " << ObjectID << ",\n    Body: <<" << Body << ">>,\n}\n";
+    ss << "\n{\n    UUID: " << UUID << ",\n    Type: " << Type
+       << ",\n    ClassID: " << ClassID << ",\n    ObjectID: " << ObjectID
+       << ",\n    MethodID: " << MethodID
+       << ",\n    Body: <<" << Body << ">>,\n}\n";
     return ss.str();
 }
 
@@ -30,6 +32,7 @@ RPCRequest RPCRequest::load_packet(const std::string &packet) {
     request.Type = _Type;
     request.ClassID = _ClassID;
     request.ObjectID = _ObjectID;
+    request.MethodID = _MethodID;
     request.Body = _Body;
 
     return request;

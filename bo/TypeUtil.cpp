@@ -6,11 +6,11 @@
 #include "BaseAGenerated.hpp" // AUTO
 #include "BaseBGenerated.hpp" // AUTO
 
-ClientObj* constructBaseAClient(std::string name, std::string address, int port) {
-  return new BaseAClient(name, address, port);
+ClientObj* constructBaseAClient(std::string name, NOSClient* client, std::string address, int port) {
+  return new BaseAClient(name, client, address, port);
 }
-ClientObj* constructBaseBClient(std::string name, std::string address, int port) {
-  return new BaseBClient(name, address, port);
+ClientObj* constructBaseBClient(std::string name, NOSClient* client, std::string address, int port) {
+  return new BaseBClient(name, client, address, port);
 }
 AgentObj* constructBaseAAgent(NetObj* obj, std::string name, NOSAgent* agent) {
   return new BaseAAgent(obj, name, agent);
@@ -27,6 +27,7 @@ TypeUtil::TypeUtil() {
 }
 ClientObj* TypeUtil::getClientObjFromAgentName(const std::string type_name,
                                                const std::string name,
+                                               NOSClient* client,
                                                std::string address,
                                                int port) const {
   const auto got = _client_nameToFunc.find(type_name);
@@ -34,7 +35,7 @@ ClientObj* TypeUtil::getClientObjFromAgentName(const std::string type_name,
     return nullptr;
   }
   const auto func = got->second;
-  return func(name, address, port); // call the specific constructor
+  return func(name, client, address, port); // call the specific constructor
 }
 AgentObj* TypeUtil::getAgentObjForServerObj(NetObj* obj, std::string name,
                                             NOSAgent* agent) {

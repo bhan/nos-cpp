@@ -2,8 +2,8 @@
 #ifndef _METHOD_CODES_HPP
 #define _METHOD_CODES_HPP
 
-enum class MessageCode : uint32_t { invalid, get_type, invoke, renew_lease };
-enum class BaseAMethodCode : uint32_t { decrement, increment };
-enum class BaseBMethodCode : uint32_t { decrement, increment };
+enum class RequestType : uint32_t { invalid, get_type, invoke, renew_lease };
+enum class BaseAMethodID : uint32_t { invalid, decrement, increment };
+enum class BaseBMethodID : uint32_t { invalid, decrement, increment };
 
 #endif /*_METHOD_CODES_HPP*/

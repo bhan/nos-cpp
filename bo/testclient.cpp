@@ -18,5 +18,10 @@ int main() {
     exit(1);
   }
   BaseBClient* baseB = dynamic_cast<BaseBClient*>(obj);
-//  std::cout << "baseB->decrement(5): " << baseB->decrement(5) << std::endl;
+
+  auto result1 = baseB->decrement(5);
+  std::cout << "baseB->decrement(5): " << result1 << std::endl;
+
+  auto result2 = baseB->increment(5);
+  std::cout << "baseB->increment(5): " << result2 << std::endl;
 }
