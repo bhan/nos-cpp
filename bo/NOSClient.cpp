@@ -89,23 +89,3 @@ void NOSClient::exit() {
   _should_exit = true;
   _mtx.unlock();
 }
-
-ClientObj* NOSClient::Import(std::string name, std::string& address, uint32_t port) {
-  RPCRequest request;
-  request.Type = static_cast<uint32_t>(RequestType::get_type);
-  request.ObjectID = name;
-  RPCResponse response = _instance->rpc_send(request, address, port);
-
-  if (response.Code != ServerCode::OK) {
-    std::cout << "NOSClient::Import of " << name << " failed" << std::endl;
-    return nullptr;
-  }
-  auto& type = response.Body;
-  std::cout << "NOSAgent::Import " << name << " of type " << type << std::endl;
-  auto clientObj = _type_util.getClientObjFromAgentName(type, name, _instance,
-                                                        address, port);
-  _mtx.lock();
-  _ObjectID_to_ClientObj[name] = clientObj;
-  _mtx.unlock();
-  return clientObj;
-}

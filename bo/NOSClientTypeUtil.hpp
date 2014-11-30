@@ -13,7 +13,8 @@ class NOSClientTypeUtil {
   ClientObj* getClientObjFromAgentName(const std::string type_name,
                                        const std::string name,
                                        NOSClient* client,
-                                       std::string address, int port) const;
+                                       std::string address,
+                                       int port) const;
  private:
   typedef ClientObj* (* ClientConstructFunc)(std::string, NOSClient*,
                                              std::string, int);

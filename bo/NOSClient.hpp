@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "../tcpsockets/tcpconnector.h"
+#include "Codes.hpp"
 #include "NetObj.hpp"
 #include "NOSCommon.hpp"
 #include "RPCRequest.hpp"
@@ -19,7 +20,28 @@ public:
   }
   void mark_obj_deleted(std::string objectID);
   void initialize(uint renew_seconds);
-  ClientObj* Import(std::string name, std::string& address, uint32_t port);
+
+  template<typename T>
+  T* Import(std::string name, std::string& address, uint32_t port) {
+    RPCRequest request;
+    request.Type = static_cast<uint32_t>(RequestType::get_type);
+    request.ObjectID = name;
+    RPCResponse response = _instance->rpc_send(request, address, port);
+
+    if (response.Code != ServerCode::OK) {
+      std::cout << "NOSClient::Import of " << name << " failed" << std::endl;
+      return nullptr;
+    }
+    auto& type = response.Body;
+    std::cout << "NOSAgent::Import " << name << " of type " << type << std::endl;
+    auto clientObj = _type_util.getClientObjFromAgentName(type, name, _instance,
+                                                          address, port);
+    _mtx.lock();
+    _ObjectID_to_ClientObj[name] = clientObj;
+    _mtx.unlock();
+    return dynamic_cast<T*>(clientObj);
+  }
+
   void exit();
   RPCResponse rpc_send(const RPCRequest &request,
                        std::string& address, uint32_t port);
