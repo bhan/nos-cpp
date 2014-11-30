@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <string>
-#include "Agent.hpp"
+#include "NOSAgent.hpp"
 #include "BaseA.hpp"
 #include "NetObj.hpp"
 
@@ -25,13 +25,13 @@ class BaseAServer : public BaseA { // used by the server
     }
  private:
   BaseA* _base;
-  Agent* _agent;
+  NOSAgent* _agent;
   std::string _name;
 };
 
 class BaseAAgent: public BaseA, public AgentObj {
  public:
-  BaseAAgent(NetObj* obj, std::string name, Agent* agent) {
+  BaseAAgent(NetObj* obj, std::string name, NOSAgent* agent) {
     BaseAServer* baseAServer = dynamic_cast<BaseAServer*>(obj);
     _base = baseAServer->_base;
     baseAServer->_name = name;

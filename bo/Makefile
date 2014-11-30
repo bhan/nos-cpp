@@ -7,11 +7,8 @@ TCP_CLASSES=../tcpsockets/tcpacceptor.cpp ../tcpsockets/tcpconnector.cpp ../tcps
 
 all: testserver testclient
 
-agent: nos
-	$(CPP) $(ARGS) -I.. -c Agent.cpp
-
 nos:
-	$(CPP) $(ARGS) -I.. -c RPCRequest.cpp RPCResponse.cpp NOSClient.cpp NOSCommon.cpp
+	$(CPP) $(ARGS) -I.. -c RPCRequest.cpp RPCResponse.cpp NOSCommon.cpp NOSAgent.cpp NOSClient.cpp
 
 classes:
 	$(CPP) $(ARGS) -I.. -c BaseAGenerated.hpp BaseBGenerated.hpp
@@ -19,11 +16,11 @@ classes:
 serialize:
 	$(CPP) $(ARGS) -I.. -c Serialize.hpp
 
-testserver: agent utils
-	$(CPP) $(ARGS) -o testserver.out $(TCP_CLASSES) RPCResponse.o RPCRequest.o NOSClient.o NOSCommon.o Agent.o TypeUtil.o testserver.cpp $(LD)
+testserver: nos utils
+	$(CPP) $(ARGS) -o testserver.out $(TCP_CLASSES) RPCResponse.o RPCRequest.o NOSCommon.o NOSAgent.o TypeUtil.o testserver.cpp $(LD)
 
-testclient: agent utils
-	$(CPP) $(ARGS) -o testclient.out $(TCP_CLASSES) RPCResponse.o RPCRequest.o NOSClient.o NOSCommon.o Agent.o TypeUtil.o testclient.cpp $(LD)
+testclient: nos utils
+	$(CPP) $(ARGS) -o testclient.out $(TCP_CLASSES) RPCResponse.o RPCRequest.o NOSCommon.o NOSClient.o TypeUtil.o testclient.cpp $(LD)
 
 utils: classes
 	$(CPP) $(ARGS) -c TypeUtil.cpp

@@ -18,8 +18,7 @@ std::string RPCRequest::packet() const {
 }
 
 RPCRequest RPCRequest::load_packet(const std::string &packet) {
-    uint32_t _UUID, Type, MethodID;
-    RequestType _Type;
+    uint32_t _UUID, _Type, _MethodID;
     std::string _ClassID, _ObjectID, _Body;
 
     std::stringstream ss; ss.str(packet);

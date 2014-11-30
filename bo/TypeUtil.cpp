@@ -6,16 +6,16 @@
 #include "BaseAGenerated.hpp" // AUTO
 #include "BaseBGenerated.hpp" // AUTO
 
-ClientObj* constructBaseAClient(std::string name, std::string ip_addr, int port) { // AUTO
-  return new BaseAClient(name, ip_addr, port);
+ClientObj* constructBaseAClient(std::string name, std::string address, int port) {
+  return new BaseAClient(name, address, port);
 }
-ClientObj* constructBaseBClient(std::string name, std::string ip_addr, int port) { // AUTO
-  return new BaseBClient(name, ip_addr, port);
+ClientObj* constructBaseBClient(std::string name, std::string address, int port) {
+  return new BaseBClient(name, address, port);
 }
-AgentObj* constructBaseAAgent(NetObj* obj, std::string name, Agent* agent) {
+AgentObj* constructBaseAAgent(NetObj* obj, std::string name, NOSAgent* agent) {
   return new BaseAAgent(obj, name, agent);
 }
-AgentObj* constructBaseBAgent(NetObj* obj, std::string name, Agent* agent) {
+AgentObj* constructBaseBAgent(NetObj* obj, std::string name, NOSAgent* agent) {
   return new BaseBAgent(obj, name, agent);
 }
 
@@ -27,17 +27,17 @@ TypeUtil::TypeUtil() {
 }
 ClientObj* TypeUtil::getClientObjFromAgentName(const std::string type_name,
                                                const std::string name,
-                                               std::string ip_addr,
+                                               std::string address,
                                                int port) const {
   const auto got = _client_nameToFunc.find(type_name);
   if (got == _client_nameToFunc.end()) {
     return nullptr;
   }
   const auto func = got->second;
-  return func(name, ip_addr, port); // call the specific constructor
+  return func(name, address, port); // call the specific constructor
 }
 AgentObj* TypeUtil::getAgentObjForServerObj(NetObj* obj, std::string name,
-                                            Agent* agent) {
+                                            NOSAgent* agent) {
   const std::string type_name = typeid(*obj).name();
   const auto got = _agent_nameToFunc.find(type_name);
   if (got == _agent_nameToFunc.end()) {

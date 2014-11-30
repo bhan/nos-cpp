@@ -6,7 +6,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "Agent.hpp"
+#include "NOSAgent.hpp"
 #include "BaseB.hpp"
 #include "NetObj.hpp"
 #include "Codes.hpp"
@@ -58,13 +58,13 @@ class BaseBServer : public BaseB {
   }
  private:
   BaseB* _base;
-  Agent* _agent;
+  NOSAgent* _agent;
   std::string _name;
 };
 
 class BaseBAgent : public AgentObj {
  public:
-  BaseBAgent(NetObj* obj, std::string name, Agent* agent) {
+  BaseBAgent(NetObj* obj, std::string name, NOSAgent* agent) {
     BaseBServer* baseBServer = dynamic_cast<BaseBServer*>(obj);
     _base = baseBServer->_base;
     baseBServer->_name = name;
