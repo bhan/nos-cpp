@@ -16,6 +16,7 @@ public:
     const std::string getReturnType() const;
     const std::string getName() const;
     const std::string getArgNames() const;
+    const std::string getArgTypes() const;
     const std::string getArgNamesWithTypes() const;
 
 private:

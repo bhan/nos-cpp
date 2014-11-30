@@ -97,8 +97,9 @@ static void printClassTemplate(ClassRep& classRep) {
             auto funcDict = dict.AddSectionDictionary("METHOD_IMPLS");
             funcDict->SetValue("METHOD_RET_TYPE", funcRep->getReturnType());
             funcDict->SetValue("METHOD_NAME", funcRep->getName());
-            funcDict->SetValue("METHOD_ARGS_WITH_TYPES", funcRep->getArgNamesWithTypes());
             funcDict->SetValue("METHOD_ARGS", funcRep->getArgNames());
+            funcDict->SetValue("METHOD_ARGS_TYPES", funcRep->getArgTypes());
+            funcDict->SetValue("METHOD_ARGS_WITH_TYPES", funcRep->getArgNamesWithTypes());
         }
     }
     dict.SetValue("CTOR_ARGS_WITH_TYPES", "momma");

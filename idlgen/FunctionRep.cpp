@@ -42,6 +42,17 @@ const std::string FunctionRep::getArgNames() const {
     return os.str();
 }
 
+const std::string FunctionRep::getArgTypes() const {
+    std::ostringstream os;
+    for (size_t i = 0; i < argTypes.size(); ++i) {
+        if (i != 0) {
+            os << ", ";
+        }
+        os << argTypes[i];
+    }
+    return os.str();
+}
+
 const std::string FunctionRep::getArgNamesWithTypes() const {
     std::ostringstream os;
     for (size_t i = 0; i < argNames.size(); ++i) {
