@@ -91,8 +91,17 @@ class {{CLASS_NAME}}Client : public ClientObj {
     auto return_tuple = Serializer::unpack<std::tuple<{{METHOD_RET_TYPE}}>>(response.Body);
     return std::get<0>(return_tuple);
   }
-
 {{/METHOD_IMPLS}}
+
+{{#PUBLIC_FIELDS}}
+  {{FIELD_TYPE}} get{{FIELD_NAME_CAMEL_CASE}}() {
+    // TODO fill in code
+  }
+
+  void set{{FIELD_NAME_CAMEL_CASE}}({{FIELD_TYPE}} value) {
+    // TODO fill in code
+  }
+{{/PUBLIC_FIELDS}}
 };
 
 #endif /* _BASE_B_GENERATED_H */

@@ -7,8 +7,9 @@
 #include "AstParser.hpp"
 #include "ClassRep.hpp"
 #include "FunctionRep.hpp"
+#include "FieldRep.hpp"
 
-static enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClientData parserState) {
+static enum CXChildVisitResult classMemberPrinter(CXCursor cursor, CXCursor, CXClientData parserState) {
     auto classRep = static_cast<ClassRep*>(parserState);
 
     auto access = clang_getCXXAccessSpecifier(cursor);
@@ -55,7 +56,19 @@ static enum CXChildVisitResult functionPrinter(CXCursor cursor, CXCursor, CXClie
         auto str = clang_getCursorDisplayName(cursor);
         classRep->addBaseClass(clang_getCString(str));
         clang_disposeString(str);
+    } else if (cursor.kind == CXCursorKind::CXCursor_FieldDecl) {
+        auto str = clang_getCursorDisplayName(cursor);
+        std::unique_ptr<FieldRep> field(new FieldRep(clang_getCString(str)));
+        clang_disposeString(str);
+
+        auto fieldType = clang_getCursorType(cursor);
+        auto retTypeCXStr = clang_getTypeSpelling(fieldType);
+        field->setType(clang_getCString(retTypeCXStr));
+        clang_disposeString(retTypeCXStr);
+
+        classRep->addPublicField(field.release());
     }
+
     return CXChildVisit_Continue;
 }
 
@@ -66,7 +79,7 @@ static enum CXChildVisitResult classPrinter(CXCursor cursor, CXCursor, CXClientD
         std::unique_ptr<ClassRep> classRep(new ClassRep(clang_getCString(str)));
         clang_disposeString(str);
 
-        clang_visitChildren(cursor, functionPrinter, classRep.get());
+        clang_visitChildren(cursor, classMemberPrinter, classRep.get());
 
         classes->push_back(classRep.release());
     }
@@ -103,8 +116,13 @@ void AstParser::printClassTemplate(std::ostream& os, ClassRep& classRep) {
             funcDict->SetValue("METHOD_ARGS_WITH_TYPES", funcRep->getArgNamesWithTypes());
         }
     }
-    dict.SetValue("CTOR_ARGS_WITH_TYPES", "momma");
 
+    for (auto &fieldRep : classRep.getPublicFields()) {
+        auto fieldDict = dict.AddSectionDictionary("PUBLIC_FIELDS");
+        fieldDict->SetValue("FIELD_NAME", fieldRep->getName());
+        fieldDict->SetValue("FIELD_TYPE", fieldRep->getType());
+        fieldDict->SetValue("FIELD_NAME_CAMEL_CASE", fieldRep->getNameCamelCase()->c_str());
+    }
 
     std::string output;
     ctemplate::ExpandTemplate(templateFilename_, ctemplate::DO_NOT_STRIP, &dict, &output);

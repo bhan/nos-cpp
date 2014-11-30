@@ -16,6 +16,10 @@ void ClassRep::addFunction(FunctionRep* funcRep) {
     functions_.push_back(funcRep);
 }
 
+void ClassRep::addPublicField(FieldRep* fieldRep) {
+    public_fields_.push_back(fieldRep);
+}
+
 void ClassRep::addBaseClass(std::string baseClassName) {
     baseClasses_.push_back(baseClassName);
 }
@@ -26,6 +30,10 @@ const std::string ClassRep::getName() const {
 
 const std::vector<FunctionRep*> ClassRep::getFunctions() const {
     return functions_;
+}
+
+const std::vector<FieldRep*> ClassRep::getPublicFields() const {
+    return public_fields_;
 }
 
 bool ClassRep::isNetObj() const {
