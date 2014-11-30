@@ -12,6 +12,11 @@ NOSClient* NOSClient::_instance = nullptr;
 int main() {
   std::string address = "localhost"; int port = 5555;
 
+  ClientObj* objA = NOSClient::Instance()->Import("BaseA", address, port);
+  if (objA == NULL) {
+    std::cout << "could not get remote object" << std::endl;
+    exit(1);
+  }
   ClientObj* obj = NOSClient::Instance()->Import("BaseB", address, port);
   if (obj == NULL) {
     std::cout << "could not get remote object" << std::endl;

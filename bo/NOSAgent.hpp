@@ -19,7 +19,7 @@ class NOSAgent : public NOSCommon {
     if (_instance == nullptr) { _instance = new NOSAgent(_debugMode); }
     return _instance;
   }
-  void initialize(std::string address, uint32_t port);
+  void initialize(std::string address, uint32_t port, uint expire_seconds);
   void exit();
   void Export(const std::string name, NetObj* netObj);
   void mark_obj_deleted(std::string name);

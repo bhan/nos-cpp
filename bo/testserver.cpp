@@ -14,7 +14,7 @@ NOSAgent* NOSAgent::_instance = NULL;
 
 int main() {
   std::string address = "localhost"; int port = 5555;
-  NOSAgent::Instance()->initialize(address, port);
+  NOSAgent::Instance()->initialize(address, port, 5);
   BaseAServer* baseA = new BaseAServer();
   BaseBServer* baseB = new BaseBServer(10);
   NOSAgent::Instance()->Export("BaseA", baseA);
