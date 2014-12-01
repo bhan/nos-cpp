@@ -4,6 +4,5 @@
 
 enum class RequestType : uint32_t { invalid, get_type, invoke, renew_lease };
 enum class BaseAMethodID : uint32_t { invalid, decrement, increment };
-enum class BaseBMethodID : uint32_t { invalid, decrement, increment };
 
 #endif /*_METHOD_CODES_HPP*/

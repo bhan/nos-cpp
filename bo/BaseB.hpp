@@ -3,6 +3,7 @@
 #define _BASE_B_H
 
 #include <cstdint>
+#include <vector>
 #include "NetObj.hpp"
 
 class BaseB : public NetObj {
@@ -20,8 +21,9 @@ class BaseB : public NetObj {
       return _num;
     }
 
-    std::string bar;
+    std::vector<std::string> bar;
     double baz;
+
 
   private:
     int32_t _num;

@@ -1,6 +1,7 @@
 // AUTO GENERATED
-#ifndef _{{CLASS_UPPERCASE}}_GENERATED_H
-#define _{{CLASS_UPPERCASE}}_GENERATED_H
+#pragma once
+#ifndef _{{CLASS_UPPERCASE}}_GENERATED_HPP
+#define _{{CLASS_UPPERCASE}}_GENERATED_HPP
 
 #include <arpa/inet.h>
 #include <iostream>
@@ -12,6 +13,16 @@
 #include "Serialize.hpp"
 #include "../tcpsockets/tcpconnector.h"
 #include "../tcpsockets/tcpstream.h"
+
+enum class {{CLASS_NAME}}MethodID : uint32_t {
+{{#METHOD_IMPLS}}
+  {{METHOD_NAME}},
+{{/METHOD_IMPLS}}
+{{#PUBLIC_FIELDS}}
+  get{{FIELD_NAME_CAMEL_CASE}},
+  set{{FIELD_NAME_CAMEL_CASE}},
+{{/PUBLIC_FIELDS}}
+};
 
 class {{CLASS_NAME}}Server : public {{CLASS_NAME}} {
   friend class {{CLASS_NAME}}Agent;
@@ -70,8 +81,25 @@ class {{CLASS_NAME}}Agent : public AgentObj {
         break;
       }
 {{/METHOD_IMPLS}}
+{{#PUBLIC_FIELDS}}
+      case {{CLASS_NAME}}MethodID::get{{FIELD_NAME_CAMEL_CASE}}: {
+        std::cout << "dispatch: get{{FIELD_NAME_CAMEL_CASE}}" << std::endl;
+        auto args = Serializer::unpack<std::tuple<>(request.Body);
+        auto result = TupleFunctional::apply_nonstatic_fn(&{{CLASS_NAME}}::get{{FIELD_NAME_CAMEL_CASE}}, _base, args);
+        response.Code = ServerCode::OK;
+        response.Body = Serializer::pack<decltype(result)>(result);
+        break;
+      }
+      case {{CLASS_NAME}}MethodID::set{{FIELD_NAME_CAMEL_CASE}}: {
+        std::cout << "dispatch: set{{FIELD_NAME_CAMEL_CASE}}" << std::endl;
+        auto args = Serializer::unpack<std::tuple<{{METHOD_ARGS_TYPES}}>>(request.Body);
+        TupleFunctional::apply_nonstatic_fn(&{{CLASS_NAME}}::set{{FIELD_NAME_CAMEL_CASE}}, _base, args);
+        response.Code = ServerCode::OK;
+        break;
+      }
+{{/PUBLIC_FIELDS}}
       default: {
-        std::cout << "dispatch: unsupported" << std::endl;
+        std::cout << "dispatch: unsupported dispatch code " << static_cast<{{CLASS_NAME}}MethodID>(request.MethodID) << std::endl;
         response.Code = ServerCode::FAIL;
         break;
       }
@@ -98,8 +126,7 @@ class {{CLASS_NAME}}Client : public ClientObj {
     RPCResponse response = _client->rpc_send(request, _address, _port);
     if (response.Code != ServerCode::OK)
       throw std::runtime_error("network error");
-    auto return_tuple = Serializer::unpack<std::tuple<{{METHOD_RET_TYPE}}>>(response.Body);
-    return std::get<0>(return_tuple);
+    return Serializer::unpack<{{METHOD_RET_TYPE}}>(response.Body);
   }
 {{/METHOD_IMPLS}}
 
@@ -112,12 +139,11 @@ class {{CLASS_NAME}}Client : public ClientObj {
     RPCResponse response = _client->rpc_send(request, _address, _port);
     if (response.Code != ServerCode::OK)
       throw std::runtime_error("network error");
-    auto return_tuple = Serializer::unpack<std::tuple<{{FIELD_TYPE}}>>(response.Body);
-    return std::get<0>(return_tuple);
+    return Serializer::unpack<{{FIELD_TYPE}}>(response.Body);
   }
 
   void set{{FIELD_NAME_CAMEL_CASE}}({{FIELD_TYPE}} &value) {
-    auto args = std::tuple<{{FIELD_TYPE}}> { value };
+    auto args = std::tuple< {{FIELD_TYPE}} > { value };
     RPCRequest request(static_cast<uint32_t>(RequestType::invoke), _name,
                        static_cast<uint32_t>({{CLASS_NAME}}MethodID::set{{FIELD_NAME_CAMEL_CASE}}),
                        Serializer::pack<decltype(args)>(args));
@@ -128,4 +154,4 @@ class {{CLASS_NAME}}Client : public ClientObj {
 {{/PUBLIC_FIELDS}}
 };
 
-#endif /* _{{CLASS_UPPERCASE}}_GENERATED_H */
+#endif /* _{{CLASS_UPPERCASE}}_GENERATED_HPP */

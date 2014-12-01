@@ -18,6 +18,12 @@
 #include "../tcpsockets/tcpconnector.h"
 #include "../tcpsockets/tcpstream.h"
 
+enum class BaseBMethodID : uint32_t {
+  invalid,
+  decrement,
+  increment,
+};
+
 class BaseBServer : public BaseB {
   friend class BaseBAgent;
  public:

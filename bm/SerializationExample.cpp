@@ -39,6 +39,9 @@
         TupleFunctional::apply_nonstatic_fn(func, obj, the_tuple);
 */
 
+void voidfunc() {
+    return;
+}
 
 double func(int a, const std::vector<int8_t> &b, double c, std::string &d) {
     std::cout << "Inside static function: "
@@ -135,5 +138,8 @@ int main(int argc, char** argv) {
         std::cout << "\nApplying empty tuple to non-static member function that takes no arguments and returns string...\n";
         auto y = TupleFunctional::apply_nonstatic_fn(&Bar::baw_method, bar, empty_tuple);
         std::cout << "y is: " << y << "\n";
+
+        // auto z = voidfunc();
+        // auto zz = Serializer::pack<decltype(z)>(z);
     }
 }
