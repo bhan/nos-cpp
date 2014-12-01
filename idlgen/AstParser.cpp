@@ -50,7 +50,7 @@ static enum CXChildVisitResult classMemberPrinter(CXCursor cursor, CXCursor, CXC
 
             funcRep->addArgmument(argTypeStr, argName);
         }
-        
+
         classRep->addFunction(funcRep.release());
     } else if (cursor.kind == CXCursorKind::CXCursor_CXXBaseSpecifier) {
         auto str = clang_getCursorDisplayName(cursor);
@@ -108,7 +108,7 @@ void AstParser::printClassTemplate(std::ostream& os, ClassRep& classRep) {
             ctorDict->SetValue("CTOR_ARGS_WITH_TYPES", funcRep->getArgNamesWithTypes());
             ctorDict->SetValue("CTOR_ARGS", funcRep->getArgNames());
         } else {
-            auto funcDict = dict.AddSectionDictionary("METHOD_IMPLS");
+            auto funcDict = dict.AddSectionDictionary(funcRep->getReturnType() == "void" ? "VOID_METHOD_IMPLS" : "METHOD_IMPLS");
             funcDict->SetValue("METHOD_RET_TYPE", funcRep->getReturnType());
             funcDict->SetValue("METHOD_NAME", funcRep->getName());
             funcDict->SetValue("METHOD_ARGS", funcRep->getArgNames());

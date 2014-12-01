@@ -21,6 +21,18 @@ class BaseB : public NetObj {
       return _num;
     }
 
+    bool bork_method(uint32_t a, std::string b) {
+      return true;
+    }
+
+    void bark_method(std::vector<double> a) {
+      return;
+    }
+
+    void void_method() {
+      return;
+    }
+
     std::vector<std::string> bar;
     double baz;
 
