@@ -10,7 +10,6 @@
 #include "NOSClient.hpp"
 #include "BaseB.hpp"
 #include "NetObj.hpp"
-#include "Codes.hpp"
 #include "RPCRequest.hpp"
 #include "RPCResponse.hpp"
 #include "Serializer.hpp"
@@ -19,7 +18,6 @@
 #include "../tcpsockets/tcpstream.h"
 
 enum class BaseBMethodID : uint32_t {
-  invalid,
   decrement,
   increment,
 };

@@ -1,5 +1,12 @@
 #pragma once
 
+
+enum class RequestType : uint32_t {
+  get_type,
+  invoke,
+  renew_lease
+};
+
 struct RPCRequest {
     uint32_t UUID, Type, MethodID;
     std::string ClassID, ObjectID, Body;

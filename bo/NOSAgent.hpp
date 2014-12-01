@@ -8,9 +8,6 @@
 #include "NOSAgentTypeUtil.hpp"
 #include "NOSCommon.hpp"
 #include "RPCRequest.hpp"
-#include "../tcpsockets/tcpacceptor.h"
-#include "../tcpsockets/tcpconnector.h"
-#include "../tcpsockets/tcpstream.h"
 
 class ObjEntry;
 

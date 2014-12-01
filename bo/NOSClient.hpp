@@ -5,7 +5,6 @@
 #include <unordered_map>
 
 #include "../tcpsockets/tcpconnector.h"
-#include "Codes.hpp"
 #include "NetObj.hpp"
 #include "NOSCommon.hpp"
 #include "RPCRequest.hpp"

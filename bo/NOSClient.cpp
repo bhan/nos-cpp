@@ -3,7 +3,6 @@
 #include <mutex>
 #include <thread>
 
-#include "Codes.hpp"
 #include "NOSClient.hpp"
 
 bool NOSClient::send(const std::string &buffer, std::string &responseBuffer,

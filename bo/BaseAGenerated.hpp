@@ -7,6 +7,11 @@
 #include "BaseA.hpp"
 #include "NetObj.hpp"
 
+enum class BaseAMethodID : uint32_t {
+  decrement,
+  increment
+};
+
 class BaseAServer : public BaseA { // used by the server
   friend class BaseAAgent;
   public:

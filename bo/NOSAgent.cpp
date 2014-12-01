@@ -10,7 +10,6 @@
 #include <unordered_map>
 
 #include "NOSAgent.hpp"
-#include "Codes.hpp"
 #include "RPCResponse.hpp"
 #include "Serializer.hpp"
 
