@@ -1,7 +1,10 @@
 #include <ctype.h>
-#include <clang-c/Index.h>
+#include <unistd.h>
 #include <iostream>
+#include <fstream>
 #include <string>
+
+#include <clang-c/Index.h>
 #include <ctemplate/template.h>
 
 #include "AstParser.hpp"
@@ -93,22 +96,20 @@ struct convert {
     }
 };
 
-void AstParser::printClassTemplate(std::ostream& os, ClassRep& classRep) {
-    ctemplate::TemplateDictionary dict("class");
+void AstParser::populateClassDictionary(ctemplate::TemplateDictionary* dict, ClassRep* classRep) {
+    dict->SetValue("CLASS_NAME", classRep->getName());
 
-    dict.SetValue("CLASS_NAME", classRep.getName());
-
-    std::string classUpper(classRep.getName());
+    std::string classUpper(classRep->getName());
     std::for_each(classUpper.begin(), classUpper.end(), convert());
-    dict.SetValue("CLASS_UPPERCASE", classUpper);
+    dict->SetValue("CLASS_UPPERCASE", classUpper);
 
-    for (auto &funcRep : classRep.getFunctions()) {
+    for (auto &funcRep : classRep->getFunctions()) {
         if (funcRep->isConstructor()) {
-            auto ctorDict = dict.AddSectionDictionary("CTORS");
+            auto ctorDict = dict->AddSectionDictionary("CTORS");
             ctorDict->SetValue("CTOR_ARGS_WITH_TYPES", funcRep->getArgNamesWithTypes());
             ctorDict->SetValue("CTOR_ARGS", funcRep->getArgNames());
         } else {
-            auto funcDict = dict.AddSectionDictionary(funcRep->getReturnType() == "void" ? "VOID_METHOD_IMPLS" : "METHOD_IMPLS");
+            auto funcDict = dict->AddSectionDictionary(funcRep->getReturnType() == "void" ? "VOID_METHOD_IMPLS" : "METHOD_IMPLS");
             funcDict->SetValue("METHOD_RET_TYPE", funcRep->getReturnType());
             funcDict->SetValue("METHOD_NAME", funcRep->getName());
             funcDict->SetValue("METHOD_ARGS", funcRep->getArgNames());
@@ -117,24 +118,55 @@ void AstParser::printClassTemplate(std::ostream& os, ClassRep& classRep) {
         }
     }
 
-    for (auto &fieldRep : classRep.getPublicFields()) {
-        auto fieldDict = dict.AddSectionDictionary("PUBLIC_FIELDS");
+    for (auto &fieldRep : classRep->getPublicFields()) {
+        auto fieldDict = dict->AddSectionDictionary("PUBLIC_FIELDS");
         fieldDict->SetValue("FIELD_NAME", fieldRep->getName());
         fieldDict->SetValue("FIELD_TYPE", fieldRep->getType());
         fieldDict->SetValue("FIELD_NAME_CAMEL_CASE", fieldRep->getNameCamelCase()->c_str());
     }
+}
+
+void AstParser::printClassTemplate(std::ostream& os, ClassRep& classRep) {
+    ctemplate::TemplateDictionary dict("class");
+
+    populateClassDictionary(&dict, &classRep);
 
     std::string output;
     ctemplate::ExpandTemplate(templateFilename_, ctemplate::DO_NOT_STRIP, &dict, &output);
     os << output;
 }
 
-void AstParser::printTemplates(std::ostream& os, std::vector<ClassRep*>& classes) {
+void AstParser::printRegistrarTemplate(std::ostream& os, ctemplate::TemplateDictionary& dict) {
+    std::string output;
+    ctemplate::ExpandTemplate(registrarFilename_, ctemplate::DO_NOT_STRIP, &dict, &output);
+    os << output;
+}
+
+bool AstParser::printTemplates(std::ostream& error, std::vector<ClassRep*>& classes) {
+    ctemplate::TemplateDictionary dict("registrar");
+
     for (auto &classRep : classes) {
         if (classRep->isNetObj()) {
-            printClassTemplate(os, *classRep);
+            if (!registrarFilename_.empty()) {
+                auto classDict = dict.AddSectionDictionary("CLASSES");
+                populateClassDictionary(classDict, classRep);
+            }
+
+            std::ofstream outputFile;
+            outputFile.open(outputDirectory_ + "/" + classRep->getName() + "Generated.hpp", std::ios::out | std::ios::trunc | std::ios::binary);
+            printClassTemplate(outputFile, *classRep);
+            outputFile.close();
         }
     }
+
+    if (!registrarFilename_.empty()) {
+        std::ofstream outputFile;
+        outputFile.open(outputDirectory_ + "/Registrar.cpp", std::ios::out | std::ios::trunc | std::ios::binary);
+        printRegistrarTemplate(outputFile, dict);
+        outputFile.close();
+    }
+
+    return true;
 }
 
 bool AstParser::checkForOutputErrors(std::ostream& os, CXTranslationUnit tu) {
@@ -159,32 +191,41 @@ bool AstParser::checkForOutputErrors(std::ostream& os, CXTranslationUnit tu) {
     return fatalError;
 }
 
-void AstParser::setFile(std::string filename) {
-    inputFilename_ = filename;
+void AstParser::addFile(std::string filename) {
+    inputFilenames_.push_back(filename);
 }
 
 void AstParser::setTemplate(std::string filename) {
     templateFilename_ = filename;
 }
 
+void AstParser::setRegistrar(std::string filename) {
+    registrarFilename_ = filename;
+}
+
+void AstParser::setOutputDirectory(std::string dirname) {
+    outputDirectory_ = dirname;
+}
+
 bool AstParser::generateOutput(std::ostream& output, std::ostream& error) {
-    auto index = clang_createIndex(0, 0);
-    auto transUnit = clang_parseTranslationUnit(index, inputFilename_.c_str(), NULL, 0, 0, 0, CXTranslationUnit_None);
-
-    if (checkForOutputErrors(error, transUnit)) {
-        // TODO: hook up to clang in makefile so we can stop ignoring this
-        //return false;
-    }
-
     std::unique_ptr<std::vector<ClassRep*> > classes(new std::vector<ClassRep*>());
 
-    auto cursor = clang_getTranslationUnitCursor(transUnit);
-    clang_visitChildren(cursor, classPrinter, classes.get());
+    auto index = clang_createIndex(0, 0);
+    for (auto &filename : inputFilenames_) {
+        std::cout << "translating " << filename << std::endl;
+        auto transUnit = clang_parseTranslationUnit(index, filename.c_str(), NULL, 0, 0, 0, CXTranslationUnit_None);
 
-    clang_disposeTranslationUnit(transUnit);
+        if (checkForOutputErrors(error, transUnit)) {
+            // TODO: hook up to clang in makefile so we can stop ignoring this
+            //return false;
+        }
+
+        auto cursor = clang_getTranslationUnitCursor(transUnit);
+        clang_visitChildren(cursor, classPrinter, classes.get());
+
+        clang_disposeTranslationUnit(transUnit);
+    }
     clang_disposeIndex(index);
 
-    printTemplates(output, *classes.get());
-
-    return true;
+    return printTemplates(error, *classes.get());
 }
