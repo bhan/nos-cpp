@@ -6,16 +6,16 @@
 #include "BaseAGenerated.hpp" // AUTO
 #include "BaseBGenerated.hpp" // AUTO
 
-AgentObj* constructBaseAAgent(NetObj* obj, std::string name, NOSAgent* agent) {
+AgentObj* constructBaseAAgent(NetObj* obj, std::string name, NOSAgent* agent) { // AUTO
   return new BaseAAgent(obj, name, agent);
 }
-AgentObj* constructBaseBAgent(NetObj* obj, std::string name, NOSAgent* agent) {
+AgentObj* constructBaseBAgent(NetObj* obj, std::string name, NOSAgent* agent) { // AUTO
   return new BaseBAgent(obj, name, agent);
 }
 
 NOSAgentTypeUtil::NOSAgentTypeUtil() {
-  _agent_nameToFunc[typeid(BaseAServer).name()] = &constructBaseAAgent;
-  _agent_nameToFunc[typeid(BaseBServer).name()] = &constructBaseBAgent;
+  _agent_nameToFunc[typeid(BaseAServer).name()] = &constructBaseAAgent; // AUTO
+  _agent_nameToFunc[typeid(BaseBServer).name()] = &constructBaseBAgent; // AUTO
 }
 
 AgentObj* NOSAgentTypeUtil::getAgentObjForServerObj(

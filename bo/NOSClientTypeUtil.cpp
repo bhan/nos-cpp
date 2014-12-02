@@ -6,16 +6,16 @@
 #include "BaseAGenerated.hpp" // AUTO
 #include "BaseBGenerated.hpp" // AUTO
 
-ClientObj* constructBaseAClient(std::string name, NOSClient* client, std::string address, int port) {
+ClientObj* constructBaseAClient(std::string name, NOSClient* client, std::string address, int port) { // AUTO
   return new BaseAClient(name, client, address, port);
 }
-ClientObj* constructBaseBClient(std::string name, NOSClient* client, std::string address, int port) {
+ClientObj* constructBaseBClient(std::string name, NOSClient* client, std::string address, int port) { // AUTO
   return new BaseBClient(name, client, address, port);
 }
 
 NOSClientTypeUtil::NOSClientTypeUtil() {
-  _client_nameToFunc[typeid(BaseAAgent).name()] = &constructBaseAClient;
-  _client_nameToFunc[typeid(BaseBAgent).name()] = &constructBaseBClient;
+  _client_nameToFunc[typeid(BaseAAgent).name()] = &constructBaseAClient; // AUTO
+  _client_nameToFunc[typeid(BaseBAgent).name()] = &constructBaseBClient; // AUTO
 }
 
 ClientObj* NOSClientTypeUtil::getClientObjFromAgentName(
