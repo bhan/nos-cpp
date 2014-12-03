@@ -3,8 +3,8 @@
 #include <unordered_map>
 
 #include "NOSClientTypeUtil.hpp"
-#include "BaseAGenerated.hpp" // AUTO
-#include "BaseBGenerated.hpp" // AUTO
+#include "../output/BaseAGenerated.hpp" // AUTO
+#include "../output/BaseBGenerated.hpp" // AUTO
 
 ClientObj* constructBaseAClient(std::string name, NOSClient* client, std::string address, int port) { // AUTO
   return new BaseAClient(name, client, address, port);

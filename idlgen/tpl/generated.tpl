@@ -100,17 +100,19 @@ class {{CLASS_NAME}}Agent : public AgentObj {
 {{#PUBLIC_FIELDS}}
             case {{CLASS_NAME}}MethodID::get{{FIELD_NAME_CAMEL_CASE}}: {
                 std::cout << "dispatch: get{{FIELD_NAME_CAMEL_CASE}}" << std::endl;
-                auto args = Serializer::unpack<std::tuple<>>(request.Body);
-                auto result = TupleFunctional::apply_nonstatic_fn(&{{CLASS_NAME}}::get{{FIELD_NAME_CAMEL_CASE}}, _base, args);
-                response.Code = ServerCode::OK;
+                //auto args = Serializer::unpack<std::tuple<>>(request.Body);
+                //auto result = TupleFunctional::apply_nonstatic_fn(&{{CLASS_NAME}}::get{{FIELD_NAME_CAMEL_CASE}}, _base, args);
+                auto result = _base->{{FIELD_NAME}};
                 response.Body = Serializer::pack<decltype(result)>(result);
+                response.Code = ServerCode::OK;
                 break;
             }
 
             case {{CLASS_NAME}}MethodID::set{{FIELD_NAME_CAMEL_CASE}}: {
                 std::cout << "dispatch: set{{FIELD_NAME_CAMEL_CASE}}" << std::endl;
-                auto args = Serializer::unpack<std::tuple<{{METHOD_ARGS_TYPES}}>>(request.Body);
-                TupleFunctional::apply_nonstatic_fn(&{{CLASS_NAME}}::set{{FIELD_NAME_CAMEL_CASE}}, _base, args);
+                auto args = Serializer::unpack<std::tuple<{{FIELD_TYPE}}>>(request.Body);
+                //TupleFunctional::apply_nonstatic_fn(&{{CLASS_NAME}}::set{{FIELD_NAME_CAMEL_CASE}}, _base, args);
+                _base->{{FIELD_NAME}} = std::get<0>(args);
                 response.Code = ServerCode::OK;
                 break;
             }
