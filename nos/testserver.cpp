@@ -3,10 +3,10 @@
 #include <typeinfo>
 
 #include "NOSAgent.hpp"
-#include "BaseA.hpp"
-#include "BaseAGenerated.hpp"
-#include "BaseB.hpp"
-#include "BaseBGenerated.hpp"
+#include "../netobj_classes/BaseA.hpp"
+#include "../output/BaseAGenerated.hpp"
+#include "../netobj_classes/BaseB.hpp"
+#include "../output/BaseBGenerated.hpp"
 
 NOSAgent* NOSAgent::_instance = NULL;
 

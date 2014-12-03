@@ -13,7 +13,6 @@ AgentObj* construct{{CLASS_NAME}}Agent(NetObj* obj, std::string name, NOSAgent* 
     return new {{CLASS_NAME}}Agent(obj, name, agent);
 }
 {{/CLASSES}}
-
 NOSAgentTypeUtil::NOSAgentTypeUtil() {
 {{#CLASSES}}
   _agent_nameToFunc[typeid({{CLASS_NAME}}Server).name()] = &construct{{CLASS_NAME}}Agent;

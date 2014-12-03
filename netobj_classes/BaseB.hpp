@@ -12,7 +12,7 @@ class BaseB : public NetObj {
     BaseB(int32_t num) : _num(num) {}
     virtual ~BaseB() {}
 
-    int32_t increment(int a) {
+    int32_t increment(int32_t a) {
       for (int i = 0; i < a; ++i) ++_num;
       return _num;
     }

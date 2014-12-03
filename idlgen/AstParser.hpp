@@ -16,6 +16,7 @@ class AstParser {
 
     void setTemplate(std::string filename);
     void setRegistrar(std::string filename);
+    void setClientRegistrar(std::string filename);
     void setOutputDirectory(std::string path);
     void addFile(std::string filename);
 
@@ -24,12 +25,14 @@ class AstParser {
   private:
     std::string templateFilename_;
     std::string registrarFilename_;
+    std::string clientRegistrarFilename_;
     std::string outputDirectory_;
     std::vector<std::string> inputFilenames_;
 
     void populateClassDictionary(ctemplate::TemplateDictionary* dict, ClassRep* classRep);
     void printClassTemplate(std::ostream& os, ClassRep& classRep);
     void printRegistrarTemplate(std::ostream& os, ctemplate::TemplateDictionary& dict);
+    void printClientRegistrarTemplate(std::ostream& os, ctemplate::TemplateDictionary& dict);
     bool printTemplates(std::ostream& os, std::vector<ClassRep*>& classes);
     bool checkForOutputErrors(std::ostream& output, CXTranslationUnit tu);
 };

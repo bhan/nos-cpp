@@ -3,8 +3,8 @@
 #include <unordered_map>
 
 #include "NOSAgentTypeUtil.hpp"
-#include "BaseAGenerated.hpp" // AUTO
-#include "BaseBGenerated.hpp" // AUTO
+#include "../output/BaseAGenerated.hpp" // AUTO
+#include "../output/BaseBGenerated.hpp" // AUTO
 
 AgentObj* constructBaseAAgent(NetObj* obj, std::string name, NOSAgent* agent) { // AUTO
   return new BaseAAgent(obj, name, agent);

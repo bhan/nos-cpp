@@ -23,7 +23,7 @@ struct Arg : public option::Arg {
     }
 };
 
-enum optionIndex { UNKNOWN, HELP, TEMPLATE, REG_TEMPLATE, CLANG_OPTIONS, OUTPUT_DIR };
+enum optionIndex { UNKNOWN, HELP, TEMPLATE, REG_TEMPLATE, CLIENT_REG_TEMPLATE, CLANG_OPTIONS, OUTPUT_DIR };
 const option::Descriptor usage[] = {
     {UNKNOWN,       0,  "", "",              option::Arg::None,
         "USAGE: idlgen [options] <file> [<file> ...]\n\n"
@@ -34,6 +34,8 @@ const option::Descriptor usage[] = {
         "  --class-template, -t  \tUse given template file for each class." },
     {REG_TEMPLATE,  0, "r", "registrar",     Arg::Required,
         "  --registrar, -r  \tUse given template file for the registrar output." },
+    {CLIENT_REG_TEMPLATE,  0, "x", "client registrar",     Arg::Required,
+        "  --client_registrar, -x  \tUse given template file for the client registrar output." },
     {CLANG_OPTIONS, 0, "c", "clang-options", option::Arg::Optional,
         "  --clang-options, -c  \tUse given clang options."},
     {OUTPUT_DIR,    0, "o", "output-dir",    Arg::Required,
@@ -75,6 +77,9 @@ int main(int argc, char* argv[]) {
     } else if (options[REG_TEMPLATE].count() > 1 || options[REG_TEMPLATE].last()->arg == nullptr) {
         std::cerr << "Only one registrar template may be specified." << std::endl;
         return 1;
+    } else if (options[CLIENT_REG_TEMPLATE].count() > 1 || options[CLIENT_REG_TEMPLATE].last()->arg == nullptr) {
+        std::cerr << "Only one client registrar template may be specified." << std::endl;
+        return 1;
     } else if (parse.nonOptionsCount() < 1) {
         std::cerr << "Source file(s) must be specified: " << parse.nonOptionsCount() << " found." << std::endl;
         return 1;
@@ -86,6 +91,9 @@ int main(int argc, char* argv[]) {
     generator.setOutputDirectory(options[OUTPUT_DIR].last()->arg);
     if (options[REG_TEMPLATE].count() == 1) {
         generator.setRegistrar(options[REG_TEMPLATE].last()->arg);
+    }
+    if (options[CLIENT_REG_TEMPLATE].count() == 1) {
+        generator.setClientRegistrar(options[CLIENT_REG_TEMPLATE].last()->arg);
     }
 
     for (int i = 0; i < parse.nonOptionsCount(); ++i) {

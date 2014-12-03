@@ -142,12 +142,18 @@ void AstParser::printRegistrarTemplate(std::ostream& os, ctemplate::TemplateDict
     os << output;
 }
 
+void AstParser::printClientRegistrarTemplate(std::ostream& os, ctemplate::TemplateDictionary& dict) {
+    std::string output;
+    ctemplate::ExpandTemplate(clientRegistrarFilename_, ctemplate::DO_NOT_STRIP, &dict, &output);
+    os << output;
+}
+
 bool AstParser::printTemplates(std::ostream& error, std::vector<ClassRep*>& classes) {
     ctemplate::TemplateDictionary dict("registrar");
 
     for (auto &classRep : classes) {
         if (classRep->isNetObj()) {
-            if (!registrarFilename_.empty()) {
+            if (!registrarFilename_.empty() || !clientRegistrarFilename_.empty()) {
                 auto classDict = dict.AddSectionDictionary("CLASSES");
                 populateClassDictionary(classDict, classRep);
             }
@@ -163,6 +169,12 @@ bool AstParser::printTemplates(std::ostream& error, std::vector<ClassRep*>& clas
         std::ofstream outputFile;
         outputFile.open(outputDirectory_ + "/Registrar.cpp", std::ios::out | std::ios::trunc | std::ios::binary);
         printRegistrarTemplate(outputFile, dict);
+        outputFile.close();
+    }
+    if (!clientRegistrarFilename_.empty()) {
+        std::ofstream outputFile;
+        outputFile.open(outputDirectory_ + "/ClientRegistrar.cpp", std::ios::out | std::ios::trunc | std::ios::binary);
+        printClientRegistrarTemplate(outputFile, dict);
         outputFile.close();
     }
 
@@ -203,6 +215,9 @@ void AstParser::setRegistrar(std::string filename) {
     registrarFilename_ = filename;
 }
 
+void AstParser::setClientRegistrar(std::string filename) {
+    clientRegistrarFilename_ = filename;
+}
 void AstParser::setOutputDirectory(std::string dirname) {
     outputDirectory_ = dirname;
 }

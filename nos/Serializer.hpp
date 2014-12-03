@@ -1,3 +1,4 @@
+#pragma once
 #include <cereal/types/string.hpp>
 #include <cereal/archives/portable_binary.hpp>
 #include <cereal/types/unordered_map.hpp>

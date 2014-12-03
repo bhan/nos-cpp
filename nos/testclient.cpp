@@ -4,8 +4,8 @@
 
 #include "NOSClient.hpp"
 #include "NetObj.hpp"
-#include "BaseAGenerated.hpp"
-#include "BaseBGenerated.hpp"
+#include "../output/BaseAGenerated.hpp"
+#include "../output/BaseBGenerated.hpp"
 
 NOSClient* NOSClient::_instance = nullptr;
 
