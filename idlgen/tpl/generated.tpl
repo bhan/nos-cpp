@@ -1,18 +1,18 @@
 // AUTO GENERATED
-#pragma once
 #ifndef _{{CLASS_UPPERCASE}}_GENERATED_HPP
 #define _{{CLASS_UPPERCASE}}_GENERATED_HPP
 
 #include <iostream>
 #include <stdexcept>
 
-#include "{{CLASS_NAME}}.hpp"
-#include "ClientObj.hpp"
-#include "Codes.hpp"
-#include "Serializer.hpp"
-#include "TupleFunctional.hpp"
-#include "../tcpsockets/tcpconnector.h"
-#include "../tcpsockets/tcpstream.h"
+#include "../netobj_classes/{{CLASS_NAME}}.hpp"
+#include "../nos/NetObj.hpp"
+#include "../nos/NOSAgent.hpp"
+#include "../nos/NOSClient.hpp"
+#include "../nos/RPCRequest.hpp"
+#include "../nos/RPCResponse.hpp"
+#include "../nos/Serializer.hpp"
+#include "../nos/TupleFunctional.hpp"
 
 enum class {{CLASS_NAME}}MethodID : uint32_t {
     // Methods with return values
@@ -100,7 +100,7 @@ class {{CLASS_NAME}}Agent : public AgentObj {
 {{#PUBLIC_FIELDS}}
             case {{CLASS_NAME}}MethodID::get{{FIELD_NAME_CAMEL_CASE}}: {
                 std::cout << "dispatch: get{{FIELD_NAME_CAMEL_CASE}}" << std::endl;
-                auto args = Serializer::unpack<std::tuple<>(request.Body);
+                auto args = Serializer::unpack<std::tuple<>>(request.Body);
                 auto result = TupleFunctional::apply_nonstatic_fn(&{{CLASS_NAME}}::get{{FIELD_NAME_CAMEL_CASE}}, _base, args);
                 response.Code = ServerCode::OK;
                 response.Body = Serializer::pack<decltype(result)>(result);
@@ -117,7 +117,7 @@ class {{CLASS_NAME}}Agent : public AgentObj {
 {{/PUBLIC_FIELDS}}
             default: {
                 std::stringstream err;
-                err << "dispatch: unsupported dispatch code " << static_cast<{{CLASS_NAME}}MethodID>(request.MethodID) << " for network object type \'{{CLASS_NAME}}\'\n";
+                err << "dispatch: unsupported dispatch code " << request.MethodID << " for network object type \'{{CLASS_NAME}}\'\n";
                 response.Code = ServerCode::FAIL;
                 response.Body = err.str();
                 std::cerr << response.Body;
@@ -144,7 +144,7 @@ class {{CLASS_NAME}}Client : public ClientObj {
                            static_cast<uint32_t>({{CLASS_NAME}}MethodID::{{METHOD_NAME}}),
                            Serializer::pack<decltype(args)>(args));
         RPCResponse response = _client->rpc_send(request, _address, _port);
-        hande_rpc_exceptions(RPCResponse &response);
+        handle_rpc_exceptions(response);
         return Serializer::unpack<{{METHOD_RET_TYPE}}>(response.Body);
     }
 {{/METHOD_IMPLS}}
@@ -155,7 +155,7 @@ class {{CLASS_NAME}}Client : public ClientObj {
                            static_cast<uint32_t>({{CLASS_NAME}}MethodID::{{METHOD_NAME}}),
                            Serializer::pack<decltype(args)>(args));
         RPCResponse response = _client->rpc_send(request, _address, _port);
-        hande_rpc_exceptions(RPCResponse &response);
+        handle_rpc_exceptions(response);
     }
 {{/VOID_METHOD_IMPLS}}
 {{#PUBLIC_FIELDS}}
@@ -165,7 +165,7 @@ class {{CLASS_NAME}}Client : public ClientObj {
                            static_cast<uint32_t>({{CLASS_NAME}}MethodID::get{{FIELD_NAME_CAMEL_CASE}}),
                            Serializer::pack<decltype(args)>(args));
         RPCResponse response = _client->rpc_send(request, _address, _port);
-        hande_rpc_exceptions(RPCResponse &response);
+        handle_rpc_exceptions(response);
         return Serializer::unpack<{{FIELD_TYPE}}>(response.Body);
     }
 
@@ -175,11 +175,11 @@ class {{CLASS_NAME}}Client : public ClientObj {
                            static_cast<uint32_t>({{CLASS_NAME}}MethodID::set{{FIELD_NAME_CAMEL_CASE}}),
                            Serializer::pack<decltype(args)>(args));
         RPCResponse response = _client->rpc_send(request, _address, _port);
-        hande_rpc_exceptions(RPCResponse &response);
+        handle_rpc_exceptions(response);
     }
 {{/PUBLIC_FIELDS}}
   private:
-    void hande_rpc_exceptions(RPCResponse &response) {
+    void handle_rpc_exceptions(RPCResponse &response) {
         if (response.Code == ServerCode::FAIL) {
             throw std::runtime_error(std::string("Method Invocation Failed -> Server Response:\n") + response.Body + "\n");
         } else if (response.Code != ServerCode::OK) {

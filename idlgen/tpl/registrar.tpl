@@ -2,7 +2,7 @@
 #include <typeinfo>
 #include <unordered_map>
 
-#include "NOSAgentTypeUtil.hpp"
+#include "../nos/NOSAgentTypeUtil.hpp"
 
 {{#CLASSES}}
 #include "{{CLASS_NAME}}Generated.hpp"
@@ -20,7 +20,7 @@ NOSAgentTypeUtil::NOSAgentTypeUtil() {
 {{/CLASSES}}
 }
 
-gentObj* NOSAgentTypeUtil::getAgentObjForServerObj(
+AgentObj* NOSAgentTypeUtil::getAgentObjForServerObj(
     NetObj* obj, std::string name, NOSAgent* agent) {
   const std::string type_name = typeid(*obj).name();
   const auto got = _agent_nameToFunc.find(type_name);
