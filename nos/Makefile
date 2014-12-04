@@ -14,6 +14,9 @@ nos:
 classes:
 	$(CPP) $(ARGS) -I.. -c ../output/BaseAGenerated.hpp ../output/BaseBGenerated.hpp
 
+kvstore:
+	$(CPP) $(ARGS) -I.. -c ../output/KVStoreGenerated.hpp
+
 testserver: nos utils
 	$(CPP) $(ARGS) -I.. -o testserver.out $(TCP_CLASSES) RPCResponse.o RPCRequest.o NOSCommon.o NOSAgent.o Registrar.o testserver.cpp $(LD)
 
