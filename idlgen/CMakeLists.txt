@@ -12,6 +12,9 @@ option(USE_SYSTEM_LIBCLANG "Set to ON to use the system libclang library" OFF)
 set(PATH_TO_LLVM_ROOT "" CACHE PATH "Path to the root of an LLVM+Clang binary distribution")
 set(EXTERNAL_LIBCLANG_PATH "" CACHE PATH "Path to teh libclang library to use")
 
+# Make sure we have pthreads
+FIND_PACKAGE(Threads REQUIRED)
+
 # Try to be nice and auto-download clang if it's not present.
 if (NOT USE_SYSTEM_LIBCLANG AND
         NOT PATH_TO_LLVM_ROOT AND
@@ -92,4 +95,4 @@ include_directories(SYSTEM ${CLANG_INCLUDES_DIR} ${LIBCTEMPLATE_INCLUDES_DIR})
 add_executable(idlgen main.cpp AstParser.cpp ClassRep.cpp FunctionRep.cpp FieldRep.cpp)
 
 # link against libclang and also libctemplate
-target_link_libraries(idlgen ${LIBCLANG_TARGET} ${LIBCTEMPLATE_TARGET})
+target_link_libraries(idlgen ${LIBCLANG_TARGET} ${LIBCTEMPLATE_TARGET} ${CMAKE_THREAD_LIBS_INIT})
