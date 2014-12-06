@@ -96,3 +96,6 @@ add_executable(idlgen main.cpp AstParser.cpp ClassRep.cpp FunctionRep.cpp FieldR
 
 # link against libclang and also libctemplate
 target_link_libraries(idlgen ${LIBCLANG_TARGET} ${LIBCTEMPLATE_TARGET} ${CMAKE_THREAD_LIBS_INIT})
+
+# make sure we're using C++11
+add_definitions("-std=c++11")
