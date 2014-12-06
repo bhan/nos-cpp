@@ -94,6 +94,8 @@ include_directories(SYSTEM ${CLANG_INCLUDES_DIR} ${LIBCTEMPLATE_INCLUDES_DIR})
 # Now build our tools
 add_executable(idlgen main.cpp AstParser.cpp ClassRep.cpp FunctionRep.cpp FieldRep.cpp)
 
+add_dependencies(idlgen ctemplate)
+
 # link against libclang and also libctemplate
 target_link_libraries(idlgen ${LIBCLANG_TARGET} ${LIBCTEMPLATE_TARGET} ${CMAKE_THREAD_LIBS_INIT})
 
