@@ -41,7 +41,7 @@ RPCResponse NOSClient::rpc_send(const RPCRequest &request, std::string& address,
 void NOSClient::mark_obj_deleted(std::string objectID) {
   _mtx.lock();
   _ObjectID_to_ClientObj.erase(objectID);
-  std::cout << objectID << "'s lease will not be renewed" << std::endl;
+  std::cerr << objectID << "'s lease will not be renewed" << std::endl;
   _mtx.unlock();
 }
 
@@ -54,7 +54,7 @@ static void _renew_leases(std::mutex& mtx, NOSClient* client,
 
     mtx.lock();
     time_t cur_time = time(NULL);
-    std::cout << "renew_leases at " << cur_time << std::endl;
+    std::cerr << "renew_leases at " << cur_time << std::endl;
     RPCRequest request;
     request.Type = static_cast<uint32_t>(RequestType::renew_lease);
     for (auto it = ObjectID_to_ClientObj.begin();
@@ -64,9 +64,9 @@ static void _renew_leases(std::mutex& mtx, NOSClient* client,
       auto response = client->rpc_send(request, clientObj->_address,
                                        clientObj->_port); //TODO add connection error to response
       if (response.Code != ServerCode::OK) {
-        std::cout << "renew_lease at " << cur_time << " for " << it->first << " failed" << std::endl;
+        std::cerr << "renew_lease at " << cur_time << " for " << it->first << " failed" << std::endl;
       } else {
-        std::cout << "renew_lease at " << cur_time << " for " << it->first << " done" << std::endl;
+        std::cerr << "renew_lease at " << cur_time << " for " << it->first << " done" << std::endl;
       }
     }
     mtx.unlock();

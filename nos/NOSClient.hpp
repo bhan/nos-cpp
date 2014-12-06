@@ -28,11 +28,11 @@ public:
     RPCResponse response = _instance->rpc_send(request, address, port);
 
     if (response.Code != ServerCode::OK) {
-      std::cout << "NOSClient::Import of " << name << " failed" << std::endl;
+      std::cerr << "NOSClient::Import of " << name << " failed" << std::endl;
       return nullptr;
     }
     auto& type = response.Body;
-    std::cout << "NOSAgent::Import " << name << " of type " << type << std::endl;
+    std::cerr << "NOSAgent::Import " << name << " of type " << type << std::endl;
     auto clientObj = _type_util.getClientObjFromAgentName(type, name, _instance,
                                                           address, port);
     _mtx.lock();
