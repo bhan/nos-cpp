@@ -2,20 +2,20 @@
 #include <typeinfo>
 #include <unordered_map>
 #include "../nos/NOSClientTypeUtil.hpp"
-{{#CLASSES}}
-#include "{{CLASS_NAME}}Generated.hpp"
-{{/CLASSES}}
 
-{{#CLASSES}}
-ClientObj* construct{{CLASS_NAME}}Client(std::string name, NOSClient* client, std::string address, int port) {
-    return new {{CLASS_NAME}}Client(name, client, address, port);
+#include "KVStoreGenerated.hpp"
+
+
+
+ClientObj* constructKVStoreClient(std::string name, NOSClient* client, std::string address, int port) {
+    return new KVStoreClient(name, client, address, port);
 }
-{{/CLASSES}}
+
 
 NOSClientTypeUtil::NOSClientTypeUtil() {
-{{#CLASSES}}
-    _client_nameToFunc[typeid({{CLASS_NAME}}Agent).name()] = &construct{{CLASS_NAME}}Client; // AUTO
-{{/CLASSES}}
+
+    _client_nameToFunc[typeid(KVStoreAgent).name()] = &constructKVStoreClient; // AUTO
+
 }
 
 ClientObj* NOSClientTypeUtil::getClientObjFromAgentName(
