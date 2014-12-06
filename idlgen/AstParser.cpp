@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include <string>
 
 #include <clang-c/Index.h>
