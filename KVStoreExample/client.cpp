@@ -15,13 +15,13 @@ NOSClient* NOSClient::_instance = nullptr;
 
 namespace KVSClientShell {
     void cmd_help(int argc, const char *argv[]) {
-        cout << "help                  Display the list of commands" << endl;
-        cout << "createdb <DB>         Create a node" << endl;
-        cout << "removedb <DB>         Echo arguments" << endl;
-        cout << "get <DB> <KEY>        Get a value given key" << endl;
-        cout << "put <DB> <KEY> <VAL>  Set a node" << endl;
-        cout << "del <DB> <KEY>        Set a node" << endl;
-        cout << "exit                  Exit shell" << endl;
+        cout << "    help                  Display the list of commands" << endl;
+        cout << "    createdb <DB>         Create a node" << endl;
+        cout << "    removedb <DB>         Echo arguments" << endl;
+        cout << "    get <DB> <KEY>        Get a value given key" << endl;
+        cout << "    put <DB> <KEY> <VAL>  Set a node" << endl;
+        cout << "    del <DB> <KEY>        Set a node" << endl;
+        cout << "    exit                  Exit shell" << endl;
     }
 
     void cmd_createdb(int argc, const char *argv[]) {
