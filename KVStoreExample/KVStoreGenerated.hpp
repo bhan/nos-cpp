@@ -21,6 +21,10 @@ enum class KVStoreMethodID : uint32_t {
 
     get,
 
+    del,
+
+    list,
+
     // Methods without return values
 
     // Getters and setters for public fields
@@ -46,6 +50,14 @@ class KVStoreServer : public KVStore {
 
     std::string get(std::string key) {
         return _base->get(key);
+    }
+
+    bool del(std::string key) {
+        return _base->del(key);
+    }
+
+    KVList list() {
+        return _base->list();
     }
 
 
@@ -81,6 +93,24 @@ class KVStoreAgent : public AgentObj {
                 std::cout << "dispatch: get" << std::endl;
                 auto args = Serializer::unpack< std::tuple< std::string > >(request.Body);
                 auto result = TupleFunctional::apply_nonstatic_fn(&KVStore::get, _base, args);
+                response.Code = ServerCode::OK;
+                response.Body = Serializer::pack<decltype(result)>(result);
+                break;
+            }
+
+            case KVStoreMethodID::del: {
+                std::cout << "dispatch: del" << std::endl;
+                auto args = Serializer::unpack< std::tuple< std::string > >(request.Body);
+                auto result = TupleFunctional::apply_nonstatic_fn(&KVStore::del, _base, args);
+                response.Code = ServerCode::OK;
+                response.Body = Serializer::pack<decltype(result)>(result);
+                break;
+            }
+
+            case KVStoreMethodID::list: {
+                std::cout << "dispatch: list" << std::endl;
+                auto args = Serializer::unpack< std::tuple<  > >(request.Body);
+                auto result = TupleFunctional::apply_nonstatic_fn(&KVStore::list, _base, args);
                 response.Code = ServerCode::OK;
                 response.Body = Serializer::pack<decltype(result)>(result);
                 break;
@@ -129,6 +159,26 @@ class KVStoreClient : public ClientObj {
         RPCResponse response = _client->rpc_send(request, _address, _port);
         handle_rpc_exceptions(response);
         return Serializer::unpack<std::string>(response.Body);
+    }
+
+    bool del(std::string key) {
+        auto args = std::make_tuple(key);
+        RPCRequest request(static_cast<uint32_t>(RequestType::invoke), _name,
+                           static_cast<uint32_t>(KVStoreMethodID::del),
+                           Serializer::pack<decltype(args)>(args));
+        RPCResponse response = _client->rpc_send(request, _address, _port);
+        handle_rpc_exceptions(response);
+        return Serializer::unpack<bool>(response.Body);
+    }
+
+    KVList list() {
+        auto args = std::make_tuple();
+        RPCRequest request(static_cast<uint32_t>(RequestType::invoke), _name,
+                           static_cast<uint32_t>(KVStoreMethodID::list),
+                           Serializer::pack<decltype(args)>(args));
+        RPCResponse response = _client->rpc_send(request, _address, _port);
+        handle_rpc_exceptions(response);
+        return Serializer::unpack<KVList>(response.Body);
     }
 
 
