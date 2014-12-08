@@ -75,6 +75,9 @@ class {{CLASS_NAME}}Agent : public AgentObj {
         server->_name = name;
         server->_agent = agent;
     }
+    ~{{CLASS_NAME}}Agent() {
+        delete _base;
+    }
 
     void dispatch(RPCRequest& request, RPCResponse& response) {
         switch (static_cast<{{CLASS_NAME}}MethodID>(request.MethodID)) {
