@@ -243,7 +243,6 @@ void AstParser::buildClangOptionsArray() {
     clangOptionsArray_ = new const char*[clangOptions_.size()];
     for (size_t i = 0; i < clangOptions_.size(); ++i) {
         clangOptionsArray_[i] = clangOptions_[i].c_str();
-        std::cout << "option: " << clangOptionsArray_[i] << std::endl;
     }
     clangOptionsArrayCount_ = clangOptions_.size();
 }
