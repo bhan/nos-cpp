@@ -3,6 +3,7 @@
 
 #include <map>
 #include <mutex>
+#include <tuple>
 
 #include "../nos/NetObj.hpp"
 
@@ -11,8 +12,8 @@ class PaxosNode : public NetObj {
   PaxosNode() : _min_accept_num(0) {}
   virtual ~PaxosNode() {}
 
-  std::pair<uint32_t, std::string> prepare(uint32_t num) {
-    std::pair<uint32_t, std::string> response;
+  std::tuple<uint32_t, std::string> prepare(uint32_t num) {
+    std::tuple<uint32_t, std::string> response;
     _mtx.lock();
     if (num > _min_accept_num) {
       _min_accept_num = num;
@@ -27,7 +28,7 @@ class PaxosNode : public NetObj {
     return response;
   }
 
-  bool accept(std::pair<uint32_t, std::string> accept_request) {
+  bool accept(std::tuple<uint32_t, std::string> accept_request) {
     _mtx.lock();
     uint32_t proposal_num = std::get<0>(accept_request);
     if (proposal_num < _min_accept_num) {
