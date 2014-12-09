@@ -7,13 +7,15 @@
 
 #include "../nos/NetObj.hpp"
 
+typedef std::tuple<uint32_t, std::string> proposal_type;
+
 class PaxosNode : public NetObj {
  public:
   PaxosNode() : _min_accept_num(0) {}
   virtual ~PaxosNode() {}
 
-  std::tuple<uint32_t, std::string> prepare(uint32_t num) {
-    std::tuple<uint32_t, std::string> response;
+  proposal_type prepare(uint32_t num) {
+    proposal_type response;
     _mtx.lock();
     if (num > _min_accept_num) {
       _min_accept_num = num;
@@ -28,7 +30,7 @@ class PaxosNode : public NetObj {
     return response;
   }
 
-  bool accept(std::tuple<uint32_t, std::string> accept_request) {
+  bool accept(proposal_type accept_request) {
     _mtx.lock();
     uint32_t proposal_num = std::get<0>(accept_request);
     if (proposal_num < _min_accept_num) {
