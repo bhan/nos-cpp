@@ -42,8 +42,8 @@ static enum CXChildVisitResult classMemberPrinter(CXCursor cursor, CXCursor, CXC
         auto retType = clang_getCursorType(cursor);
         auto retTypeCXStr = clang_getTypeSpelling(retType);
         std::string retTypeStr(clang_getCString(retTypeCXStr));
-        if (retTypeStr.find(' ') != std::string::npos) {
-            funcRep->setReturnType(retTypeStr.substr(0, retTypeStr.find(' ')));
+        if (retTypeStr.find('(') != std::string::npos) {
+            funcRep->setReturnType(retTypeStr.substr(0, retTypeStr.find('(') - 1));
         } else {
             funcRep->setReturnType(retTypeStr);
         }
