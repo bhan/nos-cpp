@@ -27,6 +27,17 @@ class PaxosNode : public NetObj {
     _mtx.unlock();
     return response;
   }
+
+  bool accept(std::tuple<uint32_t, std::string> accept_request) {
+    _mtx.lock();
+    uint32_t proposal_num = std::get<0>(accept_request);
+    if (proposal_num < _min_accept_num) {
+      return false;
+    }
+    std::string& message = std::get<1>(accept_request);
+    _accepted[proposal_num] = message;
+    return true;
+  }
  private:
   std::mutex _mtx;
   uint32_t _min_accept_num;
