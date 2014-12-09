@@ -36,8 +36,8 @@ const option::Descriptor usage[] = {
         "  --registrar, -r  \tUse given template file for the registrar output." },
     {CLIENT_REG_TEMPLATE,  0, "x", "client registrar",     Arg::Required,
         "  --client_registrar, -x  \tUse given template file for the client registrar output." },
-    {CLANG_OPTIONS, 0, "c", "clang-options", option::Arg::Optional,
-        "  --clang-options, -c  \tUse given clang options."},
+    {CLANG_OPTIONS, 0, "c", "clang-option", option::Arg::Optional,
+        "  --clang-option, -c  \tUse given clang options."},
     {OUTPUT_DIR,    0, "o", "output-dir",    Arg::Required,
         "  --output-dir, -o  \tUse the given directory for output files." },
     {UNKNOWN,       0, "",  "",              option::Arg::None,
@@ -98,6 +98,12 @@ int main(int argc, char* argv[]) {
 
     for (int i = 0; i < parse.nonOptionsCount(); ++i) {
         generator.addFile(parse.nonOption(i));
+    }
+
+    if (options[CLANG_OPTIONS].count() > 0) {
+        for (auto *opt = &options[CLANG_OPTIONS]; opt; opt = opt->next()) {
+            generator.addClangOption(opt->arg);
+        }
     }
 
     return generator.generateOutput(std::cout, std::cerr);

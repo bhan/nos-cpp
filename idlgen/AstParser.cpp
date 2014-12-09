@@ -14,6 +14,17 @@
 #include "FunctionRep.hpp"
 #include "FieldRep.hpp"
 
+AstParser::AstParser() : clangOptionsArray_(nullptr), clangOptionsArrayCount_(0) {
+}
+
+AstParser::~AstParser() {
+    if (clangOptionsArray_ != nullptr) {
+        delete[] clangOptionsArray_;
+        clangOptionsArray_ = nullptr;
+        clangOptionsArrayCount_ = 0;
+    }
+}
+
 static enum CXChildVisitResult classMemberPrinter(CXCursor cursor, CXCursor, CXClientData parserState) {
     auto classRep = static_cast<ClassRep*>(parserState);
 
@@ -209,6 +220,10 @@ void AstParser::addFile(std::string filename) {
     inputFilenames_.push_back(filename);
 }
 
+void AstParser::addClangOption(std::string option) {
+    clangOptions_.push_back(option);
+}
+
 void AstParser::setTemplate(std::string filename) {
     templateFilename_ = filename;
 }
@@ -224,13 +239,31 @@ void AstParser::setOutputDirectory(std::string dirname) {
     outputDirectory_ = dirname;
 }
 
+void AstParser::buildClangOptionsArray() {
+    clangOptionsArray_ = new const char*[clangOptions_.size()];
+    for (size_t i = 0; i < clangOptions_.size(); ++i) {
+        clangOptionsArray_[i] = clangOptions_[i].c_str();
+        std::cout << "option: " << clangOptionsArray_[i] << std::endl;
+    }
+    clangOptionsArrayCount_ = clangOptions_.size();
+}
+
+const char *const *AstParser::getClangOptions() const {
+    return clangOptionsArray_;
+}
+
+size_t AstParser::getClangOptionsCount() const {
+    return clangOptionsArrayCount_;
+}
+
 bool AstParser::generateOutput(std::ostream& output, std::ostream& error) {
     std::unique_ptr<std::vector<ClassRep*> > classes(new std::vector<ClassRep*>());
 
+    buildClangOptionsArray();
+
     auto index = clang_createIndex(0, 0);
     for (auto &filename : inputFilenames_) {
-        std::cout << "translating " << filename << std::endl;
-        auto transUnit = clang_parseTranslationUnit(index, filename.c_str(), NULL, 0, 0, 0, CXTranslationUnit_None);
+        auto transUnit = clang_parseTranslationUnit(index, filename.c_str(), getClangOptions(), getClangOptionsCount(), 0, 0, CXTranslationUnit_None);
 
         if (checkForOutputErrors(error, transUnit)) {
             // TODO: hook up to clang in makefile so we can stop ignoring this

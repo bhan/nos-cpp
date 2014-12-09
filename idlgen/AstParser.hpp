@@ -11,9 +11,10 @@ class ClassRep;
 
 class AstParser {
   public:
-    AstParser() {};
-    ~AstParser() {};
+    AstParser();
+    ~AstParser();
 
+    void addClangOption(std::string options);
     void setTemplate(std::string filename);
     void setRegistrar(std::string filename);
     void setClientRegistrar(std::string filename);
@@ -23,11 +24,18 @@ class AstParser {
     bool generateOutput(std::ostream& output, std::ostream& error);
 
   private:
+    std::vector<std::string> clangOptions_;
     std::string templateFilename_;
     std::string registrarFilename_;
     std::string clientRegistrarFilename_;
     std::string outputDirectory_;
     std::vector<std::string> inputFilenames_;
+    const char** clangOptionsArray_;
+    size_t clangOptionsArrayCount_;
+
+    void buildClangOptionsArray();
+    const char* const* getClangOptions() const;
+    size_t getClangOptionsCount() const;
 
     void populateClassDictionary(ctemplate::TemplateDictionary* dict, ClassRep* classRep);
     void printClassTemplate(std::ostream& os, ClassRep& classRep);
