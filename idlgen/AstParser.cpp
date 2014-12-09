@@ -43,7 +43,14 @@ static enum CXChildVisitResult classMemberPrinter(CXCursor cursor, CXCursor, CXC
         auto retTypeCXStr = clang_getTypeSpelling(retType);
         std::string retTypeStr(clang_getCString(retTypeCXStr));
         if (retTypeStr.find('(') != std::string::npos) {
-            funcRep->setReturnType(retTypeStr.substr(0, retTypeStr.find('(') - 1));
+            auto firstParenPos = retTypeStr.find('(');
+            std::string typeNameStr = retTypeStr.substr(0, firstParenPos - 1);
+            if (typeNameStr == "proposal_type") {
+                auto lastParenPos = retTypeStr.rfind(')');
+                funcRep->setReturnType(retTypeStr.substr(firstParenPos + 1, lastParenPos - firstParenPos - 1));
+            } else {
+                funcRep->setReturnType(retTypeStr.substr(0, firstParenPos - 1));
+            }
         } else {
             funcRep->setReturnType(retTypeStr);
         }
