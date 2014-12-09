@@ -11,3 +11,6 @@ Client --> Server
 == Building ==
 
 Run ./build.sh
+
+== Using ==
+./build/bin/idlgen -t ./idlgen/tpl/generated.tpl -o output -r ./idlgen/tpl/registrar.tpl -x ./idlgen/tpl/client_registrar.tpl path_to_classes
