@@ -1,7 +1,11 @@
 #ifndef _PAXOSNODE_HPP
 #define _PAXOSNODE_HPP
+
+#include <chrono>
 #include <string>
+#include <thread>
 #include <vector>
+
 #include "AcceptorGenerated.hpp"
 
 NOSAgent* NOSAgent::_instance = NULL;
@@ -17,8 +21,14 @@ class PaxosNode {
     NOSAgent::Instance()->initialize(this_address, this_port, 5);
     this_acceptor = new AcceptorServer();
     NOSAgent::Instance()->Export("Acceptor", this_acceptor);
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+
     int cur_idx = 0;
     for (auto it = addresses.begin(); it != addresses.end(); ++it, ++cur_idx) {
+      if (cur_idx == idx) {
+        continue;
+      }
+
     }
   }
  private:

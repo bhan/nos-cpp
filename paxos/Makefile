@@ -3,3 +3,5 @@ logger:
 
 clean:
 	rm -f logger
+
+.PHONY: logger clean
