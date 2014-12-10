@@ -15,5 +15,7 @@ int main(int argc, char* argv[]) {
 
   PaxosNode(addresses, std::atoi(argv[1]));
 
-  while (1) {}
+  for (std::string line; std::getline(std::cin, line); ) {
+    std::cout << "starting paxos run" << std::endl;
+  }
 }
