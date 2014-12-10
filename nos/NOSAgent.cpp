@@ -33,17 +33,17 @@ static void _garbage_collect(std::mutex& mtx,
   while (!should_exit) {
     mtx.unlock();
     time_t cur_time = time(NULL);
-    std::cout << "garbage collection at " << cur_time << std::endl;
+//    std::cout << "garbage collection at " << cur_time << std::endl;
 
     mtx.lock();
     for (auto it = name_to_obj.begin(); it != name_to_obj.end(); ) {
-      std::cout << it->first << " server_deleted? " << it->second->server_deleted << std::endl;
+//      std::cout << it->first << " server_deleted? " << it->second->server_deleted << std::endl;
       if (!it->second->server_deleted) {
         ++it;
         continue;
       }
       double diff_time = difftime(cur_time, it->second->renewed_time);
-      std::cout << "difftime: " << diff_time << std::endl;
+//      std::cout << "difftime: " << diff_time << std::endl;
       if (diff_time <= expire_seconds) {
         ++it;
         continue;
@@ -81,7 +81,7 @@ static void _run(std::mutex& mtx, NOSAgent* agent,
     if (stream == NULL) { goto err_exit; }
 
     request = agent->rpc_receive(stream);
-    std::cout << request.to_str() << std::endl;
+//    std::cout << request.to_str() << std::endl;
     switch (static_cast<RequestType>(request.Type)) {
       case RequestType::get_type: {
         std::cout << "get_type" << std::endl;
@@ -110,7 +110,7 @@ static void _run(std::mutex& mtx, NOSAgent* agent,
         break;
       }
       case RequestType::renew_lease: {
-        std::cout << "renew_lease requested for " << request.ObjectID << std::endl;
+        //std::cout << "renew_lease requested for " << request.ObjectID << std::endl;
         mtx.lock();
         auto it = name_to_obj.find(request.ObjectID);
         if (it == name_to_obj.end()) {
@@ -118,7 +118,7 @@ static void _run(std::mutex& mtx, NOSAgent* agent,
           goto send_response;
         }
         it->second->renewed_time = time(NULL);
-        std::cout << "renewed_time " << it->second->renewed_time << " for " << request.ObjectID << std::endl;
+        //std::cout << "renewed_time " << it->second->renewed_time << " for " << request.ObjectID << std::endl;
         response.Code = ServerCode::OK;
         mtx.unlock();
         break;

@@ -9,8 +9,11 @@ int main(int argc, char* argv[]) {
     std::cout << "usage: ./logger <idx>" << std::endl;
     std::exit(1);
   }
-  std::vector<std::pair<std::string, int>> addresses;
-  std::string address = "localhost"; int port = 5555;
-  addresses.push_back(std::make_pair(address, port));
+  std::vector<std::pair<std::string, int>> addresses = {
+    {"localhost", 5550}, {"localhost", 5551}, {"localhost", 5552}
+  };
+
   PaxosNode(addresses, std::atoi(argv[1]));
+
+  while (1) {}
 }

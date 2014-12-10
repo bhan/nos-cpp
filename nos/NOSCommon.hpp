@@ -9,7 +9,7 @@ public:
 
 protected:
     uint32_t TCP_BUFFER_SIZE = 256;
-    bool _debugMode = true;
+    bool _debugMode = false;
 
     std::string timestamp();
 

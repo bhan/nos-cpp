@@ -26,11 +26,13 @@ RPCResponse NOSClient::rpc_send(const RPCRequest &request, std::string& address,
   }
 
   std::string responseBuffer;
+  RPCResponse response;
   if (not send(request.packet(), responseBuffer, address, port)) {
-    return RPCResponse();
+    response.Code = ServerCode::FAIL;
+    return response;
   }
 
-  RPCResponse response = RPCResponse::load_packet(responseBuffer);
+  response = RPCResponse::load_packet(responseBuffer);
   if (_debugMode) {
     std::cerr << "Response:" << response.to_str() << "\n";
   }
@@ -54,7 +56,7 @@ static void _renew_leases(std::mutex& mtx, NOSClient* client,
 
     mtx.lock();
     time_t cur_time = time(NULL);
-    std::cerr << "renew_leases at " << cur_time << std::endl;
+//    std::cerr << "renew_leases at " << cur_time << std::endl;
     RPCRequest request;
     request.Type = static_cast<uint32_t>(RequestType::renew_lease);
     for (auto it = ObjectID_to_ClientObj.begin();
@@ -66,7 +68,7 @@ static void _renew_leases(std::mutex& mtx, NOSClient* client,
       if (response.Code != ServerCode::OK) {
         std::cerr << "renew_lease at " << cur_time << " for " << it->first << " failed" << std::endl;
       } else {
-        std::cerr << "renew_lease at " << cur_time << " for " << it->first << " done" << std::endl;
+//        std::cerr << "renew_lease at " << cur_time << " for " << it->first << " done" << std::endl;
       }
     }
     mtx.unlock();

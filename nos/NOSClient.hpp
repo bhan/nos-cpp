@@ -13,7 +13,7 @@
 
 class NOSClient : protected NOSCommon, protected TCPConnector {
 public:
-  static NOSClient* Instance(uint32_t timeout=10, bool debugMode=true) {
+  static NOSClient* Instance(uint32_t timeout=10, bool debugMode=false) {
     if (_instance == nullptr) { _instance = new NOSClient(timeout, debugMode); }
     return _instance;
   }
@@ -32,7 +32,7 @@ public:
       return nullptr;
     }
     auto& type = response.Body;
-    std::cerr << "NOSAgent::Import " << name << " of type " << type << std::endl;
+//    std::cerr << "NOSClient::Import " << name << " of type " << type << std::endl;
     auto clientObj = _type_util.getClientObjFromAgentName(type, name, _instance,
                                                           address, port);
     _mtx.lock();
