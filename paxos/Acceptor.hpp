@@ -1,5 +1,5 @@
-#ifndef _PAXOSNODE_H
-#define _PAXOSNODE_H
+#ifndef _ACCEPTOR_H
+#define _ACCEPTOR_H
 
 #include <map>
 #include <mutex>
@@ -46,4 +46,4 @@ class Acceptor : public NetObj {
   std::map<uint32_t, std::string> _accepted;
 };
 
-#endif /*_PAXOSNODE_H*/
+#endif /*_ACCEPTOR_H*/
