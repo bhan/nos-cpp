@@ -5,7 +5,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "../netobj_classes/{{CLASS_NAME}}.hpp"
+#include "{{CLASS_NAME}}.hpp"
 #include "../nos/NetObj.hpp"
 #include "../nos/NOSAgent.hpp"
 #include "../nos/NOSClient.hpp"

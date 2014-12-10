@@ -9,10 +9,10 @@
 
 typedef std::tuple<uint32_t, std::string> proposal_type;
 
-class PaxosNode : public NetObj {
+class Acceptor : public NetObj {
  public:
-  PaxosNode() : _min_accept_num(0) {}
-  virtual ~PaxosNode() {}
+  Acceptor() : _min_accept_num(0) {}
+  virtual ~Acceptor() {}
 
   std::tuple<uint32_t, std::string> prepare(uint32_t num) {
     std::tuple<uint32_t, std::string> response;
