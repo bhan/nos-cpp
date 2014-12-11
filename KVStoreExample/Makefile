@@ -1,13 +1,15 @@
 CPP=clang++ -std=c++11
 INCLUDES=-I..
-LIBS=-L../tcpsockets -ltcpsockets
+LIBS=-L../nos/tcpsockets -ltcpsockets
 
 all: server client
 
-server:
+tcpsockets:
+	cd ../nos/tcpsockets && make -f Makefile.library
+server: tcpsockets
 	$(CPP) $(INCLUDES) $(LIBS) server.cpp Registrar.cpp ../nos/NOSCommon.cpp ../nos/NOSAgent.cpp ../nos/RPCRequest.cpp ../nos/RPCResponse.cpp -o server
 
-client:
+client: tcpsockets
 	$(CPP) $(INCLUDES) $(LIBS) client.cpp ClientRegistrar.cpp ../nos/NOSCommon.cpp ../nos/NOSClient.cpp ../nos/RPCRequest.cpp ../nos/RPCResponse.cpp -o client
 
 
