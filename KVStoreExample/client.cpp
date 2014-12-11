@@ -123,7 +123,7 @@ namespace KVSClientShell {
         if (cmd == "help") {
             cmd_help(argc, (const char **)argv);
         } else if (cmd == "exit") {
-            std::cout << "Good bye!\n";
+            std::cout << "Good bye!\n\n";
             exit(0);
         } else if (cmd == "createdb") {
             cmd_createdb(argc, (const char **)argv);
@@ -147,7 +147,7 @@ namespace KVSClientShell {
 
     void prompt() {
         char buf[DEBUG_MAX_LINE];
-        cout << "KVStore Client Shell" << endl;
+        cout << "\nKVStore Client Shell\nType 'help' for list of commands\n\n";
         while (cin.good()) {
             cout << ">> ";
             cin.getline((char *)&buf, DEBUG_MAX_LINE);
@@ -169,7 +169,7 @@ namespace KVSClientShell {
 
 int main(int argc, const char *argv[]) {
     if (argc != 1 && argc != 2) {
-        cout << "Usage: shell [SCRIPT]" << endl;
+        cout << "Usage: " << argv[0] << " [SCRIPT]" << endl;
         exit(1);
     }
     // std::string address = "localhost"; int port = 5555;
