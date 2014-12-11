@@ -14,40 +14,80 @@ class KVStore : public NetObj {
     KVStore() {}
     virtual ~KVStore() {}
 
-    bool put(std::string key, std::string value) {
-        if (key.empty() || value.empty()) {
-          return false;
-        }
-        _mtx.lock();
-        _map[key] = value;
-        _mtx.unlock();
-        return true;
+    bool createdb(std::string dbname) {
+      if (dbname.empty()) { return false; }
+
+      _mtx.lock();
+
+      if (_dbs.find(dbname) != _dbs.end()) { _mtx.unlock(); return false; }
+
+      _dbs[dbname];
+
+      _mtx.unlock(); return true;
     }
 
-    std::string get(std::string key) {
-        _mtx.lock();
-        auto got = _map.find(key);
-        auto value = (got == _map.end()) ? "" : got->second;
-        _mtx.unlock();
-        return value;
+    bool removedb(std::string dbname) {
+      if (dbname.empty()) { return false; }
+
+      _mtx.lock();
+
+      _dbs.erase(dbname);
+
+      _mtx.unlock(); return true;
     }
 
-    bool del(std::string key) {
-        _mtx.lock();
-        auto got = _map.find(key);
-        auto found = (got != _map.end());
-        if (found) _map.erase(got);
-        _mtx.unlock();
-        return found;
+    bool put(std::string dbname, std::string key, std::string value) {
+      if (dbname.empty() || key.empty() || value.empty()) { return false; }
+
+      _mtx.lock();
+
+      auto db = _dbs.find(dbname);
+      if (db == _dbs.end()) { _mtx.unlock(); return false; }
+
+      (db->second)[key] = value;
+
+      _mtx.unlock(); return true;
     }
 
-    KVList list() {
-        return _map;
+    std::string get(std::string dbname, std::string key) {
+      if (dbname.empty() || key.empty()) { return ""; }
+
+      _mtx.lock();
+
+      auto db = _dbs.find(dbname);
+      if (db == _dbs.end()) { _mtx.unlock(); return ""; }
+
+      auto got = (db->second).find(key);
+      auto value = (got == (db->second).end()) ? "" : got->second;
+
+      _mtx.unlock(); return value;
+    }
+
+    bool del(std::string dbname, std::string key) {
+      if (dbname.empty() || key.empty()) { return false; }
+
+      _mtx.lock();
+
+      auto db = _dbs.find(dbname);
+      if (db == _dbs.end()) { _mtx.unlock(); return false; }
+
+      auto found = (db->second).erase(key);
+
+      _mtx.unlock(); return found > 0;
+    }
+
+    KVList list(std::string dbname) {
+      _mtx.lock();
+
+      auto got = _dbs.find(dbname);
+      auto res = (got == _dbs.end()) ? KVList() : got->second;
+
+      _mtx.unlock(); return res;
     }
 
   private:
     std::mutex _mtx;
-    KVList _map;
+    std::unordered_map<std::string, KVList> _dbs;
 };
 
 #endif /* _KVSTORE_H */
