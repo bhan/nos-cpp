@@ -13,98 +13,89 @@
 NOSClient* NOSClient::_instance = nullptr;
 
 namespace KVSClientShell {
-    std::unordered_map<std::string, KVStoreClient*> KVSTORES;
     std::string address = "localhost";
     uint32_t port = 5555;
+    KVStoreClient* _kvstore;
+
+    void init() {
+      _kvstore = NOSClient::Instance()->Import<KVStoreClient>("KVStore",
+          KVSClientShell::address, KVSClientShell::port);
+      if (_kvstore == NULL) {
+        std::cout << "could not get remote object" << std::endl;
+        std::exit(1);
+      }
+    }
 
     void cmd_help(int argc, const char *argv[]) {
-        cout << "    help                  Display the list of commands" << endl;
-        cout << "    createdb <DB>         Create remote KVStore object" << endl;
-        cout << "    removedb <DB>         Remove remote KVStore object" << endl;
-        cout << "    put <DB> <KEY> <VAL>  Set a KV pair" << endl;
-        cout << "    get <DB> <KEY>        Get a value given the key" << endl;
-        cout << "    del <DB> <KEY>        Delete a KV pair" << endl;
-        cout << "    list <DB>             List all KV pairs" << endl;
-        cout << "    exit                  Exit shell" << endl;
+      cout << "    help                  Display the list of commands" << endl;
+      cout << "    createdb <DB>         Create remote KVStore object" << endl;
+      cout << "    removedb <DB>         Remove remote KVStore object" << endl;
+      cout << "    put <DB> <KEY> <VAL>  Set a KV pair" << endl;
+      cout << "    get <DB> <KEY>        Get a value given the key" << endl;
+      cout << "    del <DB> <KEY>        Delete a KV pair" << endl;
+      cout << "    list <DB>             List all KV pairs" << endl;
+      cout << "    exit                  Exit shell" << endl;
     }
 
     void cmd_createdb(int argc, const char *argv[]) {
-        std::string obj_id = argv[1];
-        KVStoreClient* kvstore = NOSClient::Instance()->Import<KVStoreClient>("KVStore", KVSClientShell::address, KVSClientShell::port);
-        if (kvstore == NULL) {
-            std::cout << "could not get remote object" << std::endl;
-        }
-        KVSTORES[obj_id] = kvstore;
+      if (argc != 2) {
+        std::cout << "Usage: createdb <DB>" << std::endl; return;
+      }
+
+      std::string dbname = argv[1];
+      std::cout << _kvstore->createdb(dbname) << std::endl;
     }
 
     void cmd_removedb(int argc, const char *argv[]) {
-        std::string obj_id = argv[1];
-        auto kvstore = KVSTORES.find(obj_id);
-        if (kvstore == KVSTORES.end()) {
-            std::cout << "No such object with id \"" << obj_id << "\" on table\n";
-        } else {
-            delete kvstore->second;
-            KVSTORES.erase(kvstore);
-        }
+      if (argc != 2) {
+        std::cout << "Usage: removedb <DB>" << std::endl; return;
+      }
+
+      std::string dbname = argv[1];
+      std::cout << _kvstore->removedb(dbname) << std::endl;
     }
 
     void cmd_put(int argc, const char *argv[]) {
-        std::string obj_id = argv[1];
-        std::string key = argv[2];
-        std::string val = argv[3];
+      if (argc != 4) {
+        std::cout << "Usage: put <DB> <KEY> <VAL>" << std::endl; return;
+      }
 
-        auto kvstore = KVSTORES.find(obj_id);
-        if (kvstore == KVSTORES.end()) {
-            std::cout << "No such object with id \"" << obj_id << "\" on table\n";
-        } else {
-            auto result = kvstore->second->put(key, val);
-            std::cout << "kvstore->put(\"" << key << "\", \"" << val << "\"): " << (result ? "true" : "false") << std::endl;
-        }
+      std::string dbname = argv[1];
+      std::string key = argv[2];
+      std::string val = argv[3];
+
+      std::cout << _kvstore->put(dbname, key, val) << std::endl;
     }
 
     void cmd_get(int argc, const char *argv[]) {
-        std::string obj_id = argv[1];
-        std::string key = argv[2];
+      if (argc != 3) {
+        std::cout << "Usage: get <DB> <KEY>" << std::endl; return;
+      }
+      std::string dbname = argv[1];
+      std::string key = argv[2];
 
-        auto kvstore = KVSTORES.find(obj_id);
-        if (kvstore == KVSTORES.end()) {
-            std::cout << "No such object with id \"" << obj_id << "\" on table\n";
-        } else {
-            auto result = kvstore->second->get(key);
-            std::cout << "kvstore->get(\"" << key << "\"): " << result << std::endl;
-        }
+      std::cout << _kvstore->get(dbname, key) << std::endl;
     }
 
     void cmd_del(int argc, const char *argv[]) {
-        std::string obj_id = argv[1];
-        std::string key = argv[2];
+      if (argc != 3) {
+        std::cout << "Usage: del <DB> <KEY>" << std::endl; return;
+      }
+      std::string dbname = argv[1];
+      std::string key = argv[2];
 
-        auto kvstore = KVSTORES.find(obj_id);
-        if (kvstore == KVSTORES.end()) {
-            std::cout << "No such object with id " << obj_id << " on table\n";
-        } else {
-            auto result = kvstore->second->del(key);
-            std::cout << "kvstore->del(\"" << key << "\"): " << (result ? "true" : "false") << std::endl;
-        }
+      std::cout << _kvstore->del(dbname, key) << std::endl;
     }
 
     void cmd_list(int argc, const char *argv[]) {
-        if (argc < 2) {
-            std::cout << "Invalid arguments" << std::endl;
-            return;
-        }
-        std::string obj_id = argv[1];
+      if (argc != 2) { std::cout << "Usage: list <DB>" << std::endl; return; }
+      std::string dbname = argv[1];
 
-        auto kvstore = KVSTORES.find(obj_id);
-        if (kvstore == KVSTORES.end()) {
-            std::cout << "No such object with id \"" << obj_id << "\" on table\n";
-        } else {
-            auto result = kvstore->second->list();
-            std::cout << "kvstore->list(): {\n";
-            for (const auto &i : result) {
-                std::cout << "    " << i.first << ": " << i.second << "\n";
-            } std::cout << "}\n";
-        }
+      auto result = _kvstore->list(dbname);
+      std::cout << "{\n";
+      for (const auto &i : result) {
+          std::cout << "    " << i.first << ": " << i.second << "\n";
+      } std::cout << "}\n";
     }
 
     void dispatch_command(char *buf) {
@@ -193,6 +184,7 @@ int main(int argc, const char *argv[]) {
     */
 
     try {
+        KVSClientShell::init();
         if (argc == 1) KVSClientShell::prompt();
         else KVSClientShell::run_script(argv[2]);
     } catch(exception &e) {

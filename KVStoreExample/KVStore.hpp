@@ -31,9 +31,9 @@ class KVStore : public NetObj {
 
       _mtx.lock();
 
-      _dbs.erase(dbname);
+      auto found = _dbs.erase(dbname);
 
-      _mtx.unlock(); return true;
+      _mtx.unlock(); return found > 0;
     }
 
     bool put(std::string dbname, std::string key, std::string value) {
