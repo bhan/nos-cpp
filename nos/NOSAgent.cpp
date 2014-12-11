@@ -52,7 +52,7 @@ static void _garbage_collect(std::mutex& mtx,
       auto old_it = it;
       ++it;
       name_to_obj.erase(old_it);
-      std::cout << "erased " << erased << " and its entry" << std::endl;
+//      std::cout << "erased " << erased << " and its entry" << std::endl;
     }
     mtx.unlock();
 

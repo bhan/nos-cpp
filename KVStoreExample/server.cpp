@@ -3,7 +3,6 @@
 #include <string>
 
 #include "KVStoreGenerated.hpp"
-#include "../netobj_classes/KVStore.hpp"
 
 NOSAgent* NOSAgent::_instance = NULL;
 

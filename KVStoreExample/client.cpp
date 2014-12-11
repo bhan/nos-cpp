@@ -1,4 +1,4 @@
-// ./build.sh ; mkdir output ;  ./build/bin/idlgen -t ./idlgen/tpl/generated.tpl -o KVStoreExample/ -r ./idlgen/tpl/registrar.tpl -x ./idlgen/tpl/client_registrar.tpl netobj_classes/KVStore.hpp
+// ./build.sh ;  ./build/bin/idlgen -t ./idlgen/tpl/generated.tpl -o KVStoreExample/ -r ./idlgen/tpl/registrar.tpl -x ./idlgen/tpl/client_registrar.tpl KVStoreExample/KVStore.hpp
 // c++ -std=c++11 -I.. client.cpp ClientRegistrar.cpp ../nos/NOSCommon.cpp ../nos/NOSClient.cpp ../nos/RPCRequest.cpp ../nos/RPCResponse.cpp -L../tcpsockets -ltcpsockets -o client
 // ./client 2> /dev/null
 #include <iostream>
@@ -6,7 +6,6 @@
 #include <fstream>
 
 #include "KVStoreGenerated.hpp"
-#include "../netobj_classes/KVStore.hpp"
 
 #define DEBUG_MAX_ARGS      5
 #define DEBUG_MAX_LINE      256
@@ -90,6 +89,10 @@ namespace KVSClientShell {
     }
 
     void cmd_list(int argc, const char *argv[]) {
+        if (argc < 2) {
+            std::cout << "Invalid arguments" << std::endl;
+            return;
+        }
         std::string obj_id = argv[1];
 
         auto kvstore = KVSTORES.find(obj_id);

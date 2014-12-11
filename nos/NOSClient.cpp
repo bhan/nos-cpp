@@ -43,7 +43,7 @@ RPCResponse NOSClient::rpc_send(const RPCRequest &request, std::string& address,
 void NOSClient::mark_obj_deleted(std::string objectID) {
   _mtx.lock();
   _ObjectID_to_ClientObj.erase(objectID);
-  std::cerr << objectID << "'s lease will not be renewed" << std::endl;
+//  std::cerr << objectID << "'s lease will not be renewed" << std::endl;
   _mtx.unlock();
 }
 
@@ -66,7 +66,7 @@ static void _renew_leases(std::mutex& mtx, NOSClient* client,
       auto response = client->rpc_send(request, clientObj->_address,
                                        clientObj->_port); //TODO add connection error to response
       if (response.Code != ServerCode::OK) {
-        std::cerr << "renew_lease at " << cur_time << " for " << it->first << " failed" << std::endl;
+//        std::cerr << "renew_lease at " << cur_time << " for " << it->first << " failed" << std::endl;
       } else {
 //        std::cerr << "renew_lease at " << cur_time << " for " << it->first << " done" << std::endl;
       }

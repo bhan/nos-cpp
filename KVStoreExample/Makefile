@@ -5,7 +5,7 @@ LIBS=-L../nos/tcpsockets -ltcpsockets
 all: server client
 
 tcpsockets:
-	cd ../nos/tcpsockets && make -f Makefile.library
+	cd ../nos/tcpsockets && make -f Makefile.library && cp libtcpsockets.so.1 ../../KVStoreExample/
 server: tcpsockets
 	$(CPP) $(INCLUDES) $(LIBS) server.cpp Registrar.cpp ../nos/NOSCommon.cpp ../nos/NOSAgent.cpp ../nos/RPCRequest.cpp ../nos/RPCResponse.cpp -o server
 
@@ -14,4 +14,4 @@ client: tcpsockets
 
 
 clean:
-	rm -f test*.out *.gch *.o client server
+	rm -f test*.out *.gch *.o client server libtcpsockets.so.1

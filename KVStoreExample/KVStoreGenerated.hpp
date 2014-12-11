@@ -5,7 +5,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "../netobj_classes/KVStore.hpp"
+#include "KVStore.hpp"
 #include "../nos/NetObj.hpp"
 #include "../nos/NOSAgent.hpp"
 #include "../nos/NOSClient.hpp"
