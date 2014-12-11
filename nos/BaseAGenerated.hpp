@@ -1,11 +1,11 @@
 // AUTO GENERATED
-#ifndef _ACCEPTOR_GENERATED_HPP
-#define _ACCEPTOR_GENERATED_HPP
+#ifndef _BASEA_GENERATED_HPP
+#define _BASEA_GENERATED_HPP
 
 #include <iostream>
 #include <stdexcept>
 
-#include "Acceptor.hpp"
+#include "BaseA.hpp"
 #include "../nos/NetObj.hpp"
 #include "../nos/NOSAgent.hpp"
 #include "../nos/NOSClient.hpp"
@@ -14,12 +14,12 @@
 #include "../nos/Serializer.hpp"
 #include "../nos/TupleFunctional.hpp"
 
-enum class AcceptorMethodID : uint32_t {
+enum class BaseAMethodID : uint32_t {
     // Methods with return values
 
-    prepare,
+    decrement,
 
-    propose,
+    increment,
 
     // Methods without return values
 
@@ -27,63 +27,65 @@ enum class AcceptorMethodID : uint32_t {
 
 };
 
-class AcceptorServer : public Acceptor {
-    friend class AcceptorAgent;
+class BaseAServer : public BaseA {
+    friend class BaseAAgent;
 
   public:
 
-    AcceptorServer() : _base(new Acceptor()) {}
+    BaseAServer() : _base(new BaseA()) {}
+
+    BaseAServer(int32_t num) : _base(new BaseA(num)) {}
 
 
-    ~AcceptorServer() {
+    ~BaseAServer() {
         _agent->mark_obj_deleted(_name);
     }
 
 
-    std::tuple<uint32_t, std::string> prepare(uint32_t num) {
-        return _base->prepare(num);
+    int32_t decrement() {
+        return _base->decrement();
     }
 
-    bool propose(std::tuple<uint32_t, std::string> proposal) {
-        return _base->propose(proposal);
+    int32_t increment() {
+        return _base->increment();
     }
 
 
 
   private:
-    Acceptor* _base;
+    BaseA* _base;
     NOSAgent* _agent;
     std::string _name;
 };
 
-class AcceptorAgent : public AgentObj {
+class BaseAAgent : public AgentObj {
   public:
-    AcceptorAgent(NetObj* obj, std::string name, NOSAgent* agent) {
-        AcceptorServer* server = dynamic_cast<AcceptorServer*>(obj);
+    BaseAAgent(NetObj* obj, std::string name, NOSAgent* agent) {
+        BaseAServer* server = dynamic_cast<BaseAServer*>(obj);
         _base = server->_base;
         server->_name = name;
         server->_agent = agent;
     }
-    ~AcceptorAgent() {
+    ~BaseAAgent() {
         delete _base;
     }
 
     void dispatch(RPCRequest& request, RPCResponse& response) {
-        switch (static_cast<AcceptorMethodID>(request.MethodID)) {
+        switch (static_cast<BaseAMethodID>(request.MethodID)) {
 
-            case AcceptorMethodID::prepare: {
-                std::cout << "dispatch: prepare" << std::endl;
-                auto args = Serializer::unpack< std::tuple< uint32_t > >(request.Body);
-                auto result = TupleFunctional::apply_nonstatic_fn(&Acceptor::prepare, _base, args);
+            case BaseAMethodID::decrement: {
+                std::cout << "dispatch: decrement" << std::endl;
+                auto args = Serializer::unpack< std::tuple<  > >(request.Body);
+                auto result = TupleFunctional::apply_nonstatic_fn(&BaseA::decrement, _base, args);
                 response.Code = ServerCode::OK;
                 response.Body = Serializer::pack<decltype(result)>(result);
                 break;
             }
 
-            case AcceptorMethodID::propose: {
-                std::cout << "dispatch: propose" << std::endl;
-                auto args = Serializer::unpack< std::tuple< std::tuple<uint32_t, std::string> > >(request.Body);
-                auto result = TupleFunctional::apply_nonstatic_fn(&Acceptor::propose, _base, args);
+            case BaseAMethodID::increment: {
+                std::cout << "dispatch: increment" << std::endl;
+                auto args = Serializer::unpack< std::tuple<  > >(request.Body);
+                auto result = TupleFunctional::apply_nonstatic_fn(&BaseA::increment, _base, args);
                 response.Code = ServerCode::OK;
                 response.Body = Serializer::pack<decltype(result)>(result);
                 break;
@@ -93,7 +95,7 @@ class AcceptorAgent : public AgentObj {
 
             default: {
                 std::stringstream err;
-                err << "dispatch: unsupported dispatch code " << request.MethodID << " for network object type \'Acceptor\'\n";
+                err << "dispatch: unsupported dispatch code " << request.MethodID << " for network object type \'BaseA\'\n";
                 response.Code = ServerCode::FAIL;
                 response.Body = err.str();
                 std::cerr << response.Body;
@@ -102,36 +104,36 @@ class AcceptorAgent : public AgentObj {
         }
     }
   private:
-    Acceptor* _base;
+    BaseA* _base;
 };
 
-class AcceptorClient : public ClientObj {
+class BaseAClient : public ClientObj {
   public:
-    AcceptorClient(std::string name, NOSClient* client, std::string address, uint32_t port)
+    BaseAClient(std::string name, NOSClient* client, std::string address, uint32_t port)
                         : ClientObj(name, client, address, port) {}
 
-    ~AcceptorClient() {
+    ~BaseAClient() {
         _client->mark_obj_deleted(_name);
     }
 
-    std::tuple<uint32_t, std::string> prepare(uint32_t num) {
-        auto args = std::make_tuple(num);
+    int32_t decrement() {
+        auto args = std::make_tuple();
         RPCRequest request(static_cast<uint32_t>(RequestType::invoke), _name,
-                           static_cast<uint32_t>(AcceptorMethodID::prepare),
+                           static_cast<uint32_t>(BaseAMethodID::decrement),
                            Serializer::pack<decltype(args)>(args));
         RPCResponse response = _client->rpc_send(request, _address, _port);
         handle_rpc_exceptions(response);
-        return Serializer::unpack<std::tuple<uint32_t, std::string>>(response.Body);
+        return Serializer::unpack<int32_t>(response.Body);
     }
 
-    bool propose(std::tuple<uint32_t, std::string> proposal) {
-        auto args = std::make_tuple(proposal);
+    int32_t increment() {
+        auto args = std::make_tuple();
         RPCRequest request(static_cast<uint32_t>(RequestType::invoke), _name,
-                           static_cast<uint32_t>(AcceptorMethodID::propose),
+                           static_cast<uint32_t>(BaseAMethodID::increment),
                            Serializer::pack<decltype(args)>(args));
         RPCResponse response = _client->rpc_send(request, _address, _port);
         handle_rpc_exceptions(response);
-        return Serializer::unpack<bool>(response.Body);
+        return Serializer::unpack<int32_t>(response.Body);
     }
 
 
@@ -146,4 +148,4 @@ class AcceptorClient : public ClientObj {
     }
 };
 
-#endif /* _ACCEPTOR_GENERATED_HPP */
+#endif /* _BASEA_GENERATED_HPP */

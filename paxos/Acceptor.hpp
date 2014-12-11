@@ -30,16 +30,15 @@ class Acceptor : public NetObj {
     return response;
   }
 
-  bool accept(std::tuple<uint32_t, std::string> accept_request) {
+  bool propose(std::tuple<uint32_t, std::string> proposal) {
     _mtx.lock();
-    uint32_t proposal_num = std::get<0>(accept_request);
+    uint32_t proposal_num = std::get<0>(proposal);
     if (proposal_num < _min_accept_num) {
       _mtx.unlock();
       return false;
     }
-    std::string& message = std::get<1>(accept_request);
+    std::string& message = std::get<1>(proposal);
     _accepted[proposal_num] = message;
-    _min_accept_num = proposal_num;
     _mtx.unlock();
     return true;
   }

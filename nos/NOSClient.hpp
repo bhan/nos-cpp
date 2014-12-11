@@ -22,6 +22,7 @@ public:
 
   template<typename T>
   T* Import(std::string name, std::string& address, uint32_t port) {
+    std::cout << address << ":" << port << std::endl;
     RPCRequest request;
     request.Type = static_cast<uint32_t>(RequestType::get_type);
     request.ObjectID = name;
